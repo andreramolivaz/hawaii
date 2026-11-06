@@ -1,0 +1,1742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Swipe through Kauaʻi activities and get a day-by-day plan for Nov 7–11, 2026.">
+<title>Kauaʻi Match</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Zilla+Slab:wght@500;700&display=swap">
+<style>
+/* Layout: one column. Swipe view = header · weather strip · card · actions. List and Plan are scrolling views in the same column. */
+:root{
+  --bg:#ECF1EE; --surface:#FFFFFF; --surface2:#DEE7E2; --ink:#12201B; --muted:#56665F; --line:#CFD9D4;
+  --accent:#B0502A; --accent-soft:#F3DED3; --on-accent:#FFFFFF;
+  --yes:#26804E; --no:#64716C; --star:#C98E12; --on-star:#1A1200;
+  --good:#2E8B57; --ok:#C99A2E; --poor:#BF4B3A; --na:#C3CDC8;
+  --on-photo:#FFFFFF; --scrim:rgba(6,12,10,.86); --chip-bg:rgba(10,18,15,.55); --stamp-bg:rgba(8,14,12,.42);
+  --yes-stamp:#7BE0A4; --no-stamp:#F0F3F1; --star-stamp:#FFD261;
+  --backdrop:rgba(10,18,15,.45); --shadow-c:rgba(18,32,27,.16);
+  --display:"Zilla Slab", Rockwell, "Roboto Slab", Georgia, serif;
+  --body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1311; --surface:#15201C; --surface2:#1E2B26; --ink:#E6EEEA; --muted:#97A7A0; --line:#27352F;
+    --accent:#E2784A; --accent-soft:#3A2419; --on-accent:#1A0F09;
+    --yes:#52BE82; --no:#8E9C96; --star:#F0BC45;
+    --good:#4CB67C; --ok:#E0B04A; --poor:#E26B58; --na:#34423C;
+    --backdrop:rgba(0,0,0,.6); --shadow-c:rgba(0,0,0,.45); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1311; --surface:#15201C; --surface2:#1E2B26; --ink:#E6EEEA; --muted:#97A7A0; --line:#27352F;
+  --accent:#E2784A; --accent-soft:#3A2419; --on-accent:#1A0F09;
+  --yes:#52BE82; --no:#8E9C96; --star:#F0BC45;
+  --good:#4CB67C; --ok:#E0B04A; --poor:#E26B58; --na:#34423C;
+  --backdrop:rgba(0,0,0,.6); --shadow-c:rgba(0,0,0,.45); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block;flex:none}
+[hidden]{display:none!important}
+#app{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-block:10px 6px}
+.brand{min-width:0}
+.logo{font-family:var(--display);font-weight:700;font-size:24px;line-height:1;letter-spacing:-.01em;display:block;white-space:nowrap}
+.logo em{font-style:normal;color:var(--accent)}
+.trip{display:block;font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:6px;align-items:center;flex:none}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0}
+.icon-btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plan-btn{height:38px;padding:0 6px 0 13px;border-radius:19px;border:0;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}
+.badge{min-width:24px;height:24px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-size:12px;display:grid;place-items:center;padding:0 6px;font-variant-numeric:tabular-nums}
+
+/* weather strip */
+.wx{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:4px 0 8px;border:0;background:none;width:100%;text-align:left}
+.wxd{border:1px solid var(--line);border-radius:11px;padding:5px 6px;background:var(--surface);display:grid;gap:1px;min-width:0}
+.wxd .wd{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:12px;font-weight:700;white-space:nowrap}
+.wxd .wr{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wxd .sea{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
+.c-good{background:var(--good)} .c-ok{background:var(--ok)} .c-poor{background:var(--poor)} .c-na{background:var(--na)}
+
+/* deck */
+.deck-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.progress{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);padding-bottom:8px;font-variant-numeric:tabular-nums}
+.track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.bar{height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.deck{position:relative;flex:1;min-height:0;touch-action:none}
+.card{position:absolute;inset:0;border-radius:22px;overflow:hidden;background:var(--surface);box-shadow:0 10px 30px var(--shadow-c);display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;will-change:transform;border:1px solid var(--line)}
+.card.next{transform:translateY(12px) scale(.955);opacity:.9}
+.card.top{cursor:grab}
+.card.top.drag{cursor:grabbing}
+.ph{position:relative;flex:1 1 auto;min-height:150px;background:var(--surface2);overflow:hidden}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.ph::after{content:"";position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top,var(--scrim),transparent);pointer-events:none}
+.fallback{position:absolute;inset:0;display:grid;place-items:center;color:var(--on-photo)}
+.fallback svg{width:96px;height:96px;opacity:.55}
+.f-sea{background:linear-gradient(160deg,#0F6C77,#0A3A48)}
+.f-adventure{background:linear-gradient(160deg,#9D4A27,#4A2414)}
+.f-nature{background:linear-gradient(160deg,#2F6E46,#163522)}
+.f-photo{background:linear-gradient(160deg,#A8456F,#3A1F45)}
+.f-culture{background:linear-gradient(160deg,#6B4F8A,#2E2240)}
+.f-food{background:linear-gradient(160deg,#B26A1E,#5A320C)}
+.f-sunset{background:linear-gradient(160deg,#C8572F,#3C1C3A)}
+.f-run{background:linear-gradient(160deg,#1F6F78,#1B2E3D)}
+.ph-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;z-index:2}
+.chip{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--chip-bg);color:var(--on-photo);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.chip.st-ok::before,.chip.st-check::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:1px}
+.chip.st-ok::before{background:var(--yes-stamp)} .chip.st-check::before{background:var(--star-stamp)}
+.ph-bot{position:absolute;left:16px;right:16px;bottom:12px;z-index:2;color:var(--on-photo)}
+.ph-bot h2{font-family:var(--display);font-weight:700;font-size:clamp(25px,7.2vw,31px);line-height:1.04;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.ph-bot p{margin:5px 0 0;font-size:13px;opacity:.92}
+.stamp{position:absolute;top:30px;z-index:3;font-family:var(--display);font-weight:700;font-size:32px;line-height:1;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px 4px;border:4px solid currentColor;border-radius:10px;background:var(--stamp-bg);opacity:0;pointer-events:none}
+.stamp.yes{left:20px;color:var(--yes-stamp);transform:rotate(-13deg)}
+.stamp.no{right:20px;color:var(--no-stamp);transform:rotate(13deg)}
+.stamp.star{left:50%;top:38%;color:var(--star-stamp);transform:translateX(-50%) rotate(-5deg)}
+.cb{flex:none;padding:12px 16px 14px;display:grid;gap:8px}
+.price{font-family:var(--display);font-size:23px;font-weight:700;line-height:1.1}
+.price small{font-family:var(--body);font-size:13px;font-weight:400;color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.facts li{display:flex;align-items:center;gap:5px}
+.facts .bk{color:var(--accent);font-weight:700}
+.why{margin:0;font-size:14px;line-height:1.4}
+.fit{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+.cells{display:flex;gap:5px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.cell i{display:block;width:26px;height:6px;border-radius:3px;background:var(--na)}
+.cell.good i{background:var(--good)} .cell.ok i{background:var(--ok)} .cell.poor i{background:var(--poor)}
+.cell.na i{background:repeating-linear-gradient(135deg,var(--na) 0 3px,transparent 3px 6px)}
+.cell.na{opacity:.75}
+@media (max-height:700px){.why{display:none}}
+@media (max-height:600px){.fit{display:none}.cb{padding-block:10px}}
+.actions{display:flex;justify-content:center;align-items:center;gap:14px;padding-block:12px 2px}
+.act{border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px var(--shadow-c);transition:transform .15s ease}
+.act:active{transform:scale(.9)}
+.act:disabled{opacity:.4;cursor:default}
+.act-l{width:64px;height:64px}.act-m{width:52px;height:52px}.act-s{width:42px;height:42px}
+.act.no{color:var(--no)}.act.yes{color:var(--yes)}.act.star{color:var(--star)}
+.hint{text-align:center;font-size:12px;color:var(--muted);margin:4px 0 10px}
+.done{position:absolute;inset:0;border-radius:22px;border:1.5px dashed var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:12px;padding:24px}
+.done h2{font-family:var(--display);font-size:30px;margin:0;line-height:1.05}
+.done p{margin:0;color:var(--muted)}
+
+/* buttons */
+.btn{min-height:42px;padding:0 15px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.small{min-height:32px;padding:0 10px;border-radius:9px;font-size:13px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.link{color:var(--accent);font-weight:700;text-decoration:none}
+.link:hover{text-decoration:underline}
+
+/* scrolling views */
+.scroll-view{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+.view-head{padding-top:4px}
+.back{border:0;background:none;padding:6px 0;color:var(--accent);font-weight:700;display:flex;align-items:center;gap:4px}
+.view-head h1{font-family:var(--display);font-size:30px;line-height:1.05;margin:6px 0 4px;text-wrap:balance}
+.sum{margin:0 0 12px;color:var(--muted);font-size:14px}
+.sum b{color:var(--ink);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.panel{margin-top:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:12px 14px}
+.panel h3{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.panel summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.panel summary::-webkit-details-marker{display:none}
+.booklist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.booklist li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:14px;align-items:start}
+.booklist input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
+.booklist small{display:block;color:var(--muted);font-size:12px}
+
+/* list view */
+.search{width:100%;min-height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0 12px;font:500 15px var(--body);margin:2px 0 10px;-webkit-appearance:none;appearance:none}
+.fchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.fchips::-webkit-scrollbar{display:none}
+.fchip{flex:none;min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.fchip small{color:var(--muted);font-weight:600;font-size:12px;font-variant-numeric:tabular-nums}
+.fchip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.fchip.on small{color:inherit;opacity:.75}
+.lrows{list-style:none;margin:4px 0 0;padding:0}
+.lrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.lopen{flex:1;min-width:0;display:flex;align-items:center;gap:10px;border:0;background:none;padding:0;text-align:left}
+.lthumb{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;display:grid;place-items:center;color:var(--on-photo);background:var(--surface2)}
+.ltx{min-width:0;display:grid;gap:2px}
+.ltx b{font-size:14px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ltx span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:flex;gap:4px;flex:none}
+.sg{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;color:var(--muted)}
+.sg.no.on{background:var(--no);border-color:var(--no);color:var(--bg)}
+.sg.yes.on{background:var(--yes);border-color:var(--yes);color:var(--bg)}
+.sg.star.on{background:var(--star);border-color:var(--star);color:var(--on-star)}
+.lempty{padding:24px 0;color:var(--muted);text-align:center}
+
+/* plan */
+.day{margin-top:22px}
+.day-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.day-h h2{font-family:var(--display);font-size:24px;line-height:1;margin:0;white-space:nowrap}
+.day-h .dwx{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-align:right;min-width:0}
+.day-sub{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.tl{list-style:none;margin:0;padding:0}
+.ev{display:grid;grid-template-columns:50px minmax(0,1fr);gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ev time{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;line-height:1.2}
+.ev time small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.ev .main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.ev h3{margin:0;font-size:15px;line-height:1.25}
+.ev .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.ev .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.ev .thumb{width:58px;height:58px;border-radius:10px;object-fit:cover;display:grid;place-items:center;color:var(--on-photo);overflow:hidden}
+.ev img.thumb{background:var(--surface2)}
+.ev .thumb svg{width:28px;height:28px;opacity:.7}
+.ev.item{cursor:pointer}
+.ev.item:hover h3{color:var(--accent)}
+.ev.fixed time,.ev.fixed h3{color:var(--muted);font-weight:600}
+.drive{display:grid;grid-template-columns:50px minmax(0,1fr);gap:10px;font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--line);align-items:center}
+.drive span{display:flex;align-items:center;gap:6px}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.tag.book{background:var(--accent-soft);color:var(--accent)}
+.tag.star{color:var(--star)}
+.tag.match{background:var(--ink);color:var(--bg)}
+.empty-day{padding:12px 0;color:var(--muted);font-size:14px;border-bottom:1px solid var(--line)}
+.unp{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.unp li{display:grid;gap:6px}
+.unp b{font-size:14px}
+.unp .why2{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.dchip{min-height:32px;padding:0 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600}
+.dchip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.duo-grid{display:grid;gap:10px;margin-top:10px}
+.field{display:grid;gap:5px;font-size:13px;color:var(--muted)}
+.field input,.field select{min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 10px;font:600 15px var(--body);width:100%;min-width:0}
+.inline{display:flex;gap:8px}
+.inline input{flex:1}
+.foot{margin-top:26px;font-size:12px;color:var(--muted);display:grid;gap:6px}
+
+/* sheets */
+.backdrop{position:fixed;inset:0;background:var(--backdrop);z-index:20;opacity:0;transition:opacity .2s ease}
+.backdrop.open{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:88%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-radius:20px 20px 0 0;padding:8px max(18px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px var(--shadow-c)}
+.sheet.open{transform:translateY(0)}
+@media (min-width:560px){.sheet{left:50%;right:auto;width:520px;transform:translate(-50%,105%)}.sheet.open{transform:translate(-50%,0)}}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+.sh-close{position:sticky;top:0;float:right;margin:-2px -4px 0 8px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;padding:0;z-index:2}
+.sheet h2{font-family:var(--display);font-size:26px;line-height:1.08;margin:2px 0 4px;text-wrap:balance}
+.sheet h3{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.sheet p{margin:0 0 8px}
+.sheet .sub{color:var(--muted);font-size:14px;margin-bottom:10px}
+.hero{width:100%;aspect-ratio:16/9;max-width:100%;border-radius:14px;object-fit:cover;background:var(--surface2);display:block}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600;min-width:0}
+.daylist{display:grid;gap:8px}
+.drow{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:start;font-size:14px}
+.drow .dl{display:flex;align-items:center;gap:6px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.fine{font-size:12px;color:var(--muted)}
+.credit{font-size:12px;color:var(--muted);margin-top:12px}
+.sheet .btnrow{margin-top:14px}
+.wxtable{display:grid;gap:12px}
+.wxrow{display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:start}
+.wxrow b{display:block}
+.wxrow .rr{font-size:13px;color:var(--muted)}
+.credits{list-style:none;padding:0;margin:0;display:grid;gap:6px;font-size:12px;color:var(--muted)}
+.credits a{color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:20px;font-weight:700;padding:0}
+.stepper output{font:700 20px var(--body);min-width:24px;text-align:center;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <header class="appbar">
+    <div class="brand">
+      <span class="logo">Kauaʻi <em>Match</em></span>
+      <span class="trip" id="tripLine">Nov 7–11 · 4 nights</span>
+    </div>
+    <div class="tools">
+      <button class="icon-btn" id="bSet" aria-label="Trip settings"></button>
+      <button class="icon-btn" id="bList" aria-label="All activities as a list" aria-pressed="false"></button>
+      <button class="plan-btn" id="bPlan" aria-label="Open the plan">Plan <span class="badge" id="likeCount">0</span></button>
+    </div>
+  </header>
+  <button class="wx" id="wxStrip" aria-label="Weather and sea on your days"></button>
+
+  <section class="deck-view" id="deckView" aria-label="Activities to choose">
+    <div class="progress"><div class="track"><div class="bar" id="progBar"></div></div><span id="progTxt">0 / 0</span></div>
+    <div class="deck" id="deck"></div>
+    <div class="actions">
+      <button class="act act-s" id="bUndo" aria-label="Undo the last choice"></button>
+      <button class="act act-l no" id="bNo" aria-label="No, skip"></button>
+      <button class="act act-m star" id="bStar" aria-label="Hōkū: must-do"></button>
+      <button class="act act-l yes" id="bYes" aria-label="Yes, I like it"></button>
+      <button class="act act-s" id="bInfo" aria-label="Activity details"></button>
+    </div>
+    <p class="hint">Right = yes · left = no · up = <b>Hōkū</b> (star: must-do)</p>
+  </section>
+
+  <section class="scroll-view" id="listView" hidden aria-label="All activities"></section>
+  <section class="scroll-view" id="planView" hidden aria-label="Trip plan"></section>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ---------- trip facts ---------- */
+const CREDITS = {"makana-private": {"a": "Michelle Maria", "l": "CC BY 3.0", "u": "https://commons.wikimedia.org/wiki/File:Sailing_along_the_Napali_Coast_Kauai,_Hawaii_-_panoramio_(64).jpg", "s": "Wikimedia Commons"}, "makana-shared": {"a": "Brian Heimann bjheimann", "l": "CC0", "u": "https://commons.wikimedia.org/wiki/File:Napali_Coast_1_(Unsplash).jpg", "s": "Wikimedia Commons"}, "zodiac-private": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Zodiac_rafting_Boat_tour_Na_Pali_Coast_Kauai_Hawaii_(46227723482).jpg", "s": "Wikimedia Commons"}, "raft-shared": {"a": "Sheila Sund from Salem, United States", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:From_inside_a_sea_cave_(34576387814).jpg", "s": "Wikimedia Commons"}, "holoholo": {"a": "docoverachiever", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/90692748@N04/49457698783", "s": "Openverse"}, "sunset-sail": {"a": "Frank Kovalchek from Anchorage, Alaska, USA", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Sunset_over_the_Napali_Coast_(8034687052).jpg", "s": "Wikimedia Commons"}, "allerton": {"a": "Daderot.", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:Allerton_Garden,_Kauai,_Hawaii_-_view_into_valley.JPG", "s": "Wikimedia Commons"}, "anini-snorkel": {"a": "Janine Sprout", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Anahola-Beach-Kauai-Trailblazer.jpg", "s": "Wikimedia Commons"}, "bike-path": {"a": "Grace808", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:Kealia_Beach_located_along_the_Royal_Coconut_Coast_of_Kauai,_Hawaii.jpeg", "s": "Wikimedia Commons"}, "fern-grotto": {"a": "Bret Robertson", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Kamokila_Hawaiian_Village,_Kauai.jpg", "s": "Wikimedia Commons"}, "hanakapiai-beach": {"a": "Jeff Kubina", "l": "CC BY-SA 2.0", "u": "https://commons.wikimedia.org/wiki/File:Hanakapiai_Beach,_Na_Pali_Coast,_Kauai,_Hawaii.jpg", "s": "Wikimedia Commons"}, "hanakapiai-falls": {"a": "paul (dex) bica from toronto, canada", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Flickr_-_paul_bica_-_hanakapiai_falls.jpg", "s": "Wikimedia Commons"}, "hanalei-lookout": {"a": "tdlucas5000 from Lakewood Ca., United States", "l": "CC BY-SA 2.0", "u": "https://commons.wikimedia.org/wiki/File:Taro_Fields,_Hanalei,_Kauai_(9863657395).jpg", "s": "Wikimedia Commons"}, "hanalei-pier": {"a": "IIP Photo Archive", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Hanalei_Pier,_Kauai,_Hawaii,_U.S.A.jpg", "s": "Wikimedia Commons"}, "hanalei-sup": {"a": "Christopher from Salem, OR, USA", "l": "CC BY-SA 2.0", "u": "https://commons.wikimedia.org/wiki/File:Wailua_River_Kayaker_Superzoom_(3293831929).jpg", "s": "Wikimedia Commons"}, "wailua-kayak": {"a": "Tony Webster", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Wailua_River_Kayaking_-_Kauai_-_Hawaii.jpg", "s": "Wikimedia Commons"}, "hanapepe": {"a": "Richard N Horne", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:The_Hanapepe_Swinging_Bridge,_Kauai,_Hawaii.jpg", "s": "Wikimedia Commons"}, "hideaways": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Coast_of_Princeville_Kauai_Hawaii_(45553788894).jpg", "s": "Wikimedia Commons"}, "horseback": {"a": "Audreywilson", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Horseback_Riding_in_Oahu.jpg", "s": "Wikimedia Commons"}, "kauai-coffee": {"a": "Humanoid one", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:Coffee_Kauai_2.JPG", "s": "Wikimedia Commons"}, "kekaha-sunset": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Kekaha_Beach_Kauai_Hawaii_(31339136717).jpg", "s": "Wikimedia Commons"}, "koloa-landing": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Na_Pali_boat_tour_turtle_Kauai,_Hawaii_(45365305785).jpg", "s": "Wikimedia Commons"}, "limahuli": {"a": "Daderot.", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:Limahuli_Garden_and_Preserve,_Kauai,_Hawaii_-_general_view.JPG", "s": "Wikimedia Commons"}, "luau": {"a": "Frank Kovalchek from Anchorage, Alaska, USA", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Hula_dancers,_Poipu,_Kauai,_Hawaii_(4829082993).jpg", "s": "Wikimedia Commons"}, "market": {"a": "_e.t from Saratoga, USA", "l": "CC BY-SA 2.0", "u": "https://commons.wikimedia.org/wiki/File:Oahu_farmers_market.jpg", "s": "Wikimedia Commons"}, "poipu-turtles": {"a": "E bailey", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Hawaiian_monk_seal_close-up_(Neomonachus_schauinslandi).jpg", "s": "Wikimedia Commons"}, "skydive": {"a": "Irhanz", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Parachuting_sport.jpg", "s": "Wikimedia Commons"}, "spouting-horn": {"a": "Ron Clausen", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/wiki/File:Spouting_horn_blowhole_Kauai_Hawaii.jpg", "s": "Wikimedia Commons"}, "stargazing": {"a": "International Gemini Observatory/NOIRLab/NSF/AURA/B. Tafreshi", "l": "CC BY 4.0", "u": "https://commons.wikimedia.org/wiki/File:The_Milky_Way_over_Gemini_North_(_MG_7918-CC).jpg", "s": "Wikimedia Commons"}, "surf-poipu": {"a": "Robert Linsdell from St. Andrews, Canada", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Poipu_Beach,_Koloa_(502736)_(16787961722).jpg", "s": "Wikimedia Commons"}, "tubing": {"a": "rjones0856", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Mt._Waialeale.jpg", "s": "Wikimedia Commons"}, "waimea-canyon": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Waimea_Canyon_lookout_Kauai,_Hawaii_pano_(45365115955).jpg", "s": "Wikimedia Commons"}, "zipline": {"a": "a4gpa", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/94833286@N00/5194911172", "s": "Openverse"}, "kilauea-light": {"a": "Megan Nagel/USFWS – U.S. Fish and Wildlife Service Headquarters", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Daniel_K._Inouye_Kilauea_Point_Lighthouse_-_Pacific_Region_(8758368868).jpg", "s": "Wikimedia Commons"}, "mahaulepu": {"a": "cogdogblog", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Maha%27ulepo_Beach_(8725739766).jpg", "s": "Wikimedia Commons"}, "glass-beach": {"a": "Travis.Thurston", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:GlassBeach.jpg", "s": "Wikimedia Commons"}, "run-kapaa": {"a": "dronepicr", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/wiki/File:Kealia_Beach_Kauai_Hawaii_(45554020174).jpg", "s": "Wikimedia Commons"}, "run-hanalei": {"a": "Hanalei_Bay_2_-_Kauai.jpg: Ralf Beier\nderivative work: W Nowicki (talk)", "l": "CC BY 3.0", "u": "https://commons.wikimedia.org/wiki/File:Hanalei_Pier_Kauai.jpg", "s": "Wikimedia Commons"}, "fish-market": {"a": "grenade", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/54432200@N00/3550810582", "s": "Openverse"}, "kee-sunset": {"a": "iamkory", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/47742365@N00/8178963605", "s": "Openverse"}, "kipu-utv": {"a": "Ken Curtis", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/83609650@N00/172367654", "s": "Openverse"}, "koloa-rum": {"a": "Harold Litwiler, Poppy", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/116337886@N07/27940777754", "s": "Openverse"}, "kukuiolono": {"a": "Cheryl Marland", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/13654353@N08/13391876793", "s": "Openverse"}, "old-koloa": {"a": "lytfyre", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/7550067@N02/4303931389", "s": "Openverse"}, "pono": {"a": "Fuzzy Gerdes", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/62616836@N00/5080403782", "s": "Openverse"}, "red-salt": {"a": "bryce_edwards", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/98185064@N00/449191560", "s": "Openverse"}, "saimin": {"a": "arnold | inuyaki", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/58819758@N00/2207439590", "s": "Openverse"}, "sunrise-kapaa": {"a": "Heath Cajandig", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/96228372@N06/25972950804", "s": "Openverse"}, "trek-secret": {"a": "Hawaii Savvy", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/63399348@N05/7927926518", "s": "Openverse"}, "waimea-poke": {"a": "photoskate", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/44447572@N06/5442182933", "s": "Openverse"}, "shave-ice": {"a": "AlaskaDave", "l": "CC BY-SA 3.0", "u": "https://commons.wikimedia.org/wiki/File:Hilo_Ice_Shave.JPG", "s": "Wikimedia Commons"}, "wailua-falls": {"a": "Sonof Marvin", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/14916700@N00/2350439741", "s": "Openverse"}, "menehune-pond": {"a": "Eric Tessmer, Honolulu Hawaii", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/71856730@N04/30040861843", "s": "Openverse"}, "moloaa": {"a": "Skrewtape", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/75243940@N00/3882883943", "s": "Openverse"}, "photoshoot": {"a": "", "l": "CC0", "u": "https://www.rawpixel.com/image/5904691/photo-image-public-domain-person-sky", "s": "Openverse"}, "welina": {"a": "rfaulds", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/23234562@N04/2317119044", "s": "Openverse"}, "chocolate": {"a": "berniedup", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/65695019@N07/17348751253", "s": "Openverse"}, "princeville-gardens": {"a": "Kirt Edblom", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/27190564@N02/51372758326", "s": "Openverse"}, "kalaheo-cafe": {"a": "ewen and donabel", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/85979850@N00/3883271076", "s": "Openverse"}, "rainbow-eucalyptus": {"a": "Thomas James Caldwell", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/81643710@N00/16648324744", "s": "Openverse"}, "lumahai": {"a": "Syced", "l": "CC0", "u": "https://commons.wikimedia.org/w/index.php?curid=82776330", "s": "Openverse"}, "waioli-church": {"a": "Sharon Hahn Darlin", "l": "CC BY 2.0", "u": "https://commons.wikimedia.org/w/index.php?curid=106877470", "s": "Openverse"}, "hindu-monastery": {"a": "Wayoyo", "l": "CC BY-SA 4.0", "u": "https://commons.wikimedia.org/w/index.php?curid=34040752", "s": "Openverse"}, "hanalei-bread": {"a": "Ron Cogswell", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/22711505@N05/15860057881", "s": "Openverse"}, "bar-acuda": {"a": "khawkins04", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/49978063@N00/6938398411", "s": "Openverse"}, "lappert": {"a": "ella.o", "l": "CC BY 2.0", "u": "https://www.flickr.com/photos/155807330@N05/44474096241", "s": "Openverse"}, "koloa-fish": {"a": "ShardsOfBlue", "l": "CC BY-SA 2.0", "u": "https://www.flickr.com/photos/9350569@N08/5936608990", "s": "Openverse"}};
+const HAS_IMG = new Set(Object.keys(CREDITS));
+const FLIGHT_IN = 663;    // Sat 7 Nov, lands at LIH 11:03 (from LAX)
+const FLIGHT_OUT = 904;   // Wed 11 Nov, leaves LIH 15:04 (to LAX, lands 22:42)
+const INN = 'Marjorie’s Kauai Inn', INN_SHORT = 'Marjorie’s', HOTEL = '1 Hotel Hanalei Bay';
+
+const DAYS = [
+  {id:'d7',  date:'2026-11-07', short:'Sat 7',  name:'Saturday 7',   dow:'Sat', k:'Sa'},
+  {id:'d8',  date:'2026-11-08', short:'Sun 8',  name:'Sunday 8',     dow:'Sun', k:'Su'},
+  {id:'d9',  date:'2026-11-09', short:'Mon 9',  name:'Monday 9',     dow:'Mon', k:'Mo'},
+  {id:'d10', date:'2026-11-10', short:'Tue 10', name:'Tuesday 10',   dow:'Tue', k:'Tu'},
+  {id:'d11', date:'2026-11-11', short:'Wed 11', name:'Wednesday 11', dow:'Wed', k:'We'}
+];
+const DAY = Object.fromEntries(DAYS.map(d=>[d.id,d]));
+
+/* NWS Honolulu, 5 Nov 2026, 9 am HST (point forecasts, Coastal Waters Forecast, Surf Zone Forecast) */
+const WX = {
+  d7: {ic:'part', r:{N:19,E:17,S:14,W:11}, sea:'Rough (9–12 ft)', seaC:'poor', line:'Breezy, a few showers · rough seas',
+       txt:'Breezy trade winds with a few passing showers, mostly on the windward side. Seas 9–12 ft: not a boat day, but fine for the south side after landing.',
+       sc:{napali:1,north:1,south:3,hike:3,sky:2}},
+  d8: {ic:'rain', r:{N:41,E:33,S:15,W:5}, sea:'Rough (8–11 ft)', seaC:'poor', line:'Showers north & east · rough seas',
+       txt:'Scattered showers on the north and east sides, sun in the south and west. A new north-west swell arrives at dawn, surf near advisory level. Trades 20–25 knots.',
+       sc:{napali:1,north:1,south:3,hike:1,sky:2}},
+  d9: {ic:'part', r:{N:35,E:28,S:15,W:5}, sea:'Easing (7–10 ft)', seaC:'ok', line:'Sun after morning showers · seas easing',
+       txt:'A few morning showers north and east, then sun. Winds easing to 15–20 knots. New moon: a dark night, perfect for stars.',
+       sc:{napali:2,north:2,south:3,hike:2,sky:3}},
+  d10:{ic:'sun',  r:{N:18,E:19,S:15,W:5}, sea:'Calmer', seaC:'good', line:'Mostly sunny · calmer seas',
+       txt:'Drier air, sun almost everywhere, normal trades. The best day for boats and trails.',
+       sc:{napali:3,north:2,south:3,hike:3,sky:3}},
+  d11:{ic:'sun',  r:{N:10,E:12,S:10,W:3}, sea:'New NW swell possible', seaC:'ok', line:'Sunny · morning only, before the flight',
+       txt:'Sunny. A new north-west swell may arrive mid-week.',
+       sc:{napali:2,north:1,south:3,hike:3,sky:3}}
+};
+
+const ZONES = {
+  HAE:{n:'Hāʻena',s:'Hāʻena',side:'N'}, HAN:{n:'Hanalei · Princeville',s:'Hanalei',side:'N'}, KIL:{n:'Kīlauea · ʻAnini',s:'Kīlauea',side:'N'},
+  KAP:{n:'Kapaʻa · Wailua',s:'Kapaʻa',side:'E'}, LIH:{n:'Līhuʻe',s:'Līhuʻe',side:'E'}, LAW:{n:'Lāwaʻi (your inn)',s:'Lāwaʻi',side:'S'},
+  POI:{n:'Kōloa · Poʻipū',s:'Poʻipū',side:'S'}, KAL:{n:'Kalāheo · Port Allen',s:'Port Allen',side:'S'}, WAI:{n:'Waimea · Kekaha',s:'Kekaha',side:'W'},
+  CAN:{n:'Waimea Canyon',s:'Waimea Canyon',side:'W'}
+};
+/* driving minutes in normal traffic (one-lane Hanalei bridge included) */
+const DM = {
+ 'HAE-HAN':25,'HAE-KIL':45,'HAE-KAP':70,'HAE-LIH':85,'HAE-LAW':110,'HAE-POI':110,'HAE-KAL':120,'HAE-WAI':135,'HAE-CAN':175,
+ 'HAN-KIL':20,'HAN-KAP':45,'HAN-LIH':60,'HAN-LAW':85,'HAN-POI':85,'HAN-KAL':95,'HAN-WAI':110,'HAN-CAN':150,
+ 'KIL-KAP':25,'KIL-LIH':40,'KIL-LAW':70,'KIL-POI':65,'KIL-KAL':75,'KIL-WAI':90,'KIL-CAN':130,
+ 'KAP-LIH':20,'KAP-LAW':45,'KAP-POI':45,'KAP-KAL':50,'KAP-WAI':65,'KAP-CAN':105,
+ 'LIH-LAW':20,'LIH-POI':25,'LIH-KAL':30,'LIH-WAI':45,'LIH-CAN':85,
+ 'LAW-POI':15,'LAW-KAL':12,'LAW-WAI':25,'LAW-CAN':60,
+ 'POI-KAL':20,'POI-WAI':35,'POI-CAN':75,
+ 'KAL-WAI':20,'KAL-CAN':60,'WAI-CAN':40
+};
+function drive(a,b){ if(!a||!b||a==='*'||b==='*') return 0; if(a===b) return 10; return DM[a+'-'+b] ?? DM[b+'-'+a] ?? 60; }
+
+const CAT = {
+  sea:{n:'Sea'}, adventure:{n:'Adventure'}, nature:{n:'Nature'}, photo:{n:'Photo spot'}, culture:{n:'Culture'}, food:{n:'Food & drink'}, sunset:{n:'Sunset & night'}, run:{n:'Run & hike'}
+};
+const ALL = ['d7','d8','d9','d10','d11'];
+const D3 = ['d8','d9','d10'];
+const D4 = ['d7','d8','d9','d10'];
+
+/* Activity database. Times are minutes from midnight (HST).
+   fix = fixed sessions [start,end] · win = window [open,close] · wins = several windows, optionally tagged lunch/dinner
+   days = days it runs · zone = where it happens (see ZONES) · pp = price per person · grp = price per group
+   sea/rain/sky = weather sensitivity · group = only one of the group is planned · ig = photo-worthy */
+const ACT = [
+{id:'makana-private', t:'Private Nā Pali boat', op:'Makana Charters · Kekaha', cat:'sea', zone:'WAI', ig:true,
+ p:'$2,999', pu:'whole boat · up to 12', grp:2999, dur:315, fix:[[465,780]], days:D3, sea:'napali', group:'napali', book:true,
+ st:'ok', stx:'Running regular tours (late-October reviews). State records still list Kīkīaola harbor as closed: confirm the departure point.',
+ why:'Just you and the captain under 4,000-foot cliffs: sea caves, dolphins and snorkeling where the water is clearest.',
+ info:'4.5–5 hours from the harbor closest to the coast, 25 minutes from your inn. Lunch, snorkel gear and an onboard restroom included. A Native Hawaiian family shares the stories of the Nā Pali.',
+ tip:'If the sea is big the snorkel stop is skipped: keep a second day as a backup.',
+ url:'https://makanacharters.com/napali-coast-tours/private-tours/'},
+{id:'hanakapiai-falls', t:'Hanakāpīʻai Falls hike', op:'Kalalau Trail · Hāʻena', cat:'nature', zone:'HAE', ig:true,
+ p:'$5', pu:'per person + $20 parking per slot (you need 2) or $45 shuttle', pp:5, grp:40, dur:330, win:[390,1080], lastStart:570, days:D3, rain:true, pref:'early', group:'kalalau', book:true,
+ st:'ok', stx:'Day use reopened Oct 15 and the shuttle restarted Nov 2. Past mile 2 the Kalalau Trail is off-limits to day hikers.',
+ why:'The best hike open right now: 8 miles (13 km) round trip through Nā Pali jungle to a 300-foot waterfall.',
+ info:'Stream crossings: if it rains upstream, don’t cross. Reservations open 30 days ahead and sell out fast; check for cancellations around 7–8 am.',
+ tip:'No signal in the park: save your QR codes before Hanalei.',
+ url:'https://gohaena.com/'},
+{id:'wailua-falls', t:'Wailua & ʻŌpaekaʻa Falls', op:'Two waterfall lookouts · Wailua', cat:'photo', zone:'KAP', ig:true,
+ p:'$5', pu:'per person + $10 per car (state park day pass)', pp:5, grp:10, dur:60, win:[480,1050], days:ALL, pref:'am',
+ st:'check', stx:'Wailua River State Park reopened with limits on Sept 21; the non-resident same-day pass covers both falls. Confirm the lookouts are open.',
+ why:'The twin falls from the opening of “Fantasy Island”, often with a rainbow in the morning mist, then a second waterfall over the Wailua valley.',
+ info:'Both are seen from roadside lookouts: no trail down. Morning light is best for rainbows at Wailua Falls.',
+ tip:'ʻŌpaekaʻa is on Kuamoʻo Road, like the Hindu monastery and the rainbow eucalyptus.'},
+{id:'zodiac-private', t:'Private Zodiac into the sea caves', op:'Capt Andy’s · 24-ft raft', cat:'sea', zone:'WAI', ig:true,
+ p:'from $3,629', pu:'whole boat · up to 14', grp:3629, dur:240, fix:[[450,690],[750,990]], days:D3, sea:'napali', group:'napali', book:true,
+ st:'check', stx:'Rafts leave from Kīkīaola, still listed as closed in state records: ask the operator to confirm.',
+ why:'The raft slips into sea caves the catamarans can’t reach. More adrenaline, more spray, just the two of you.',
+ info:'Private captain and crew, picnic and drinks. Snorkeling if the sea allows; if the Nā Pali is too rough you go along the south coast instead.',
+ tip:'Bring a light jacket: you come back wet.',
+ url:'https://www.napali.com/private-charters/'},
+{id:'tubing', t:'Tubing through plantation canals', op:'Kauai Backcountry Adventures · Līhuʻe', cat:'adventure', zone:'LIH', ig:true,
+ p:'$163', pu:'per person', pp:163, dur:210, win:[390,1170], days:ALL,
+ st:'ok', stx:'Open and bookable after the hurricane.',
+ why:'Float on an inner tube through canals and tunnels hand-dug in the 1800s, inside an old sugar plantation.',
+ info:'3 hours with lunch, helmet and headlamp included. Departures every 30–60 minutes from 7:00 to 16:00. Closed-toe water shoes required.',
+ tip:'Check in 30 minutes early. Close to the airport: it works on landing day too.',
+ url:'https://kauaibackcountry.com/'},
+{id:'welina', meal:'dinner', t:'Sunset at Welina Terrace', op:'1 Hotel Hanalei Bay · your last night', cat:'sunset', zone:'HAN', ig:true,
+ p:'Resort prices', pu:'drinks or dinner', dur:120, fix:[[1020,1140]], days:['d10'], book:true,
+ st:'check', stx:'The hotel reopened Sept 28 with select restaurants: ask if Welina Terrace is serving and reserve a sunset table.',
+ why:'Japanese-inspired dinner and cocktails on a terrace above Hanalei Bay, with live music while the sun drops behind the north-shore mountains.',
+ info:'Non-guests come for the sunset too, so book when you check in. Sunset 17:57.',
+ tip:'Casual backup: the bar at the adults-only pool (Kai Maikaʻi).',
+ url:'https://www.1hotels.com/hanalei-bay'},
+{id:'lawai-center', t:'The 88 shrines of Lāwaʻi', op:'Lāwaʻi International Center · minutes from the inn', cat:'culture', zone:'LAW',
+ p:'By donation', pu:'', pp:0, dur:105, fix:[[585,690],[705,810],[825,930]], days:['d8'], book:true,
+ st:'ok', stx:'Open the 2nd and 4th Sunday of the month: Sunday Nov 8 is one of them.',
+ why:'A path of 88 small shrines in a sacred valley, in your own neighborhood. It opens only two Sundays a month and one falls on your trip.',
+ info:'Guided visits at 10, 12 and 14. Reserve by text at (808) 639-5952 or by email. Arrive 15 minutes early.',
+ tip:'Comfortable shoes: it’s all outdoors.',
+ url:'https://www.lawaicenter.org/pages/visit.html'},
+{id:'waimea-canyon', t:'Waimea Canyon', op:'Main lookout', cat:'nature', zone:'CAN', ig:true,
+ p:'$10', pu:'parking · entry free for now', grp:10, dur:45, win:[480,1035], days:ALL, pref:'am',
+ st:'ok', stx:'Only the main lookout has reopened (since Oct 24). Kōkeʻe, its trails and the other lookouts remain closed.',
+ why:'The “Grand Canyon of the Pacific”: 3,000 feet of red and green rock with waterfalls at the bottom.',
+ info:'Fewer clouds in the morning. Twisty road: allow an hour round trip from Waimea, which is 25 minutes from your inn.',
+ tip:'Pair it with poke and shave ice in Waimea.',
+ url:'https://dlnr.hawaii.gov/dsp/parks/kauai/waimea-canyon-state-park/'},
+{id:'rainbow-eucalyptus', t:'Rainbow eucalyptus at Keāhua', op:'Keāhua Arboretum · top of Kuamoʻo Road', cat:'photo', zone:'KAP', ig:true,
+ p:'Free', pu:'', pp:0, dur:40, win:[480,1050], days:ALL,
+ st:'check', stx:'Public access reaches only the arboretum parking lot; the Kuilau Ridge trail and other forest trails remain closed.',
+ why:'Trunks streaked green, orange, purple and blue, a stream and the mountains behind: the most colorful photo on the island.',
+ info:'Stay by the parking lot and the road. Don’t drive through the stream crossing after rain.',
+ tip:'Overcast light makes the bark colors pop.'},
+{id:'anini-snorkel', t:'Snorkel in the ʻAnini lagoon', op:'Lifeguarded beach · Kīlauea', cat:'sea', zone:'KIL',
+ p:'Free', pu:'mask rental ≈ $15', pp:0, dur:120, win:[600,960], days:ALL, sea:'north',
+ st:'ok', stx:'Lifeguard daily 8–18. No brown-water advisory since Oct 29.',
+ why:'Kauaʻi’s longest reef makes a natural pool with sea turtles.',
+ info:'Stay inside the lagoon: the channel at the end has strong currents. With north swells over 15 feet, skip it.',
+ tip:'Late morning: best light on the water.'},
+{id:'chocolate', t:'Chocolate farm tour & tasting', op:'Lydgate Farms · Kapaʻa', cat:'food', zone:'KAP', ig:true,
+ p:'from $145', pu:'per person', pp:145, dur:180, fix:[[540,720],[600,780],[660,840],[720,900]], days:['d9','d10','d11'], book:true,
+ st:'check', stx:'Listed Monday–Friday at 9, 10, 11 and noon: confirm it runs after the hurricane.',
+ why:'Walk a cacao orchard, crack open a fresh pod and taste bean-to-bar chocolate made on the farm.',
+ info:'About 3 hours, mostly outdoors on farm paths.',
+ tip:'Mosquito repellent.'},
+{id:'skydive', t:'Tandem skydive', op:'Skydive Kauai · Port Allen', cat:'adventure', zone:'KAL', ig:true,
+ p:'$269', pu:'+ tax and fuel · video $99', pp:269, dur:180, win:[480,900], days:D4, rain:true, pref:'am', book:true,
+ st:'ok', stx:'Operating (confirmed by the state Department of Transportation in October).',
+ why:'Freefall over the west coast, with Niʻihau on the horizon and the Nā Pali to the north.',
+ info:'Over 215 lb (97 kg) costs $2 per extra pound. Fewer clouds in the morning. Not on flight day: jumps slide with the weather.',
+ tip:'No jumping within 24 hours of scuba diving.',
+ url:'https://skydivekauai.com/prices/'},
+{id:'limahuli', t:'Limahuli Garden', op:'Hāʻena valley · NTBG', cat:'nature', zone:'HAE', ig:true,
+ p:'≈ $30', pu:'per person', pp:30, dur:105, win:[510,960], lastStart:855, days:['d7','d10','d11'], book:true,
+ st:'ok', stx:'Reopened with reservations, Tuesday–Saturday: Sat 7, Tue 10 and Wed 11 in your dates (Wed 11 is Veterans Day: confirm).',
+ why:'700-year-old taro terraces and plants that grow only in this valley.',
+ info:'A 0.75-mile (1.2 km) loop with many steps. Last entry 14:15. Arriving on the Hāʻena shuttle, you don’t need a reservation.',
+ tip:'Pair it with Hanakāpīʻai or sunset at Kēʻē.',
+ url:'https://ntbg.org/gardens/limahuli/'},
+{id:'mahaulepu', t:'Mahaʻulepu coast walk', op:'Heritage Trail · Poʻipū', cat:'run', zone:'POI', ig:true,
+ p:'Free', pu:'', pp:0, dur:150, win:[400,720], days:ALL, pref:'early',
+ st:'ok', stx:'Open, free, no reservation.',
+ why:'Fossil sand-dune cliffs, empty coves and monk seals napping on the beach, 15 minutes from your inn.',
+ info:'Start at Shipwreck Beach. Little shade: best at sunrise (6:45). Great as a run too, on dirt. Makauwahi Cave stays closed.',
+ tip:'Bring water and a hat.'},
+{id:'photoshoot', t:'Golden-hour couple photoshoot', op:'Local photographer · beach of your choice', cat:'photo', zone:'*', ig:true,
+ p:'≈ $300–500', pu:'per session (estimate)', grp:400, dur:60, fix:[[400,460],[1005,1065]], days:ALL, book:true,
+ st:'ok', stx:'Book a Kauaʻi-based photographer directly or through a booking platform; most need a few days’ notice.',
+ why:'Your reel without the tripod: 30–60 minutes at sunrise or sunset on a beach you pick, edited photos a few days later.',
+ info:'Easy spots: Poʻipū at sunrise (near your inn), Hanalei Pier or the 1 Hotel lawn at sunset. Ask for a short vertical video too.',
+ tip:'Solid colors, no logos.'},
+{id:'run-kapaa', t:'Sunrise run on the coastal path', op:'Ke Ala Hele Makalae · Kapaʻa', cat:'run', zone:'KAP',
+ p:'Free', pu:'', pp:0, dur:75, win:[390,600], days:ALL, pref:'early',
+ st:'ok', stx:'Path open from Lydgate to Kealia and beyond.',
+ why:'A flat path by the sea: 5–6 miles out and back toward Kealia and Donkey Beach, with the sun rising out of the ocean.',
+ info:'Start at Lydgate or central Kapaʻa. Few water fountains: carry water. Northeast trades in your face on the way out, at your back on the way home.',
+ tip:'Sunrise 6:45.'},
+{id:'stargazing', t:'Milky Way under a new moon', op:'Anywhere away from lights', cat:'sunset', zone:'*', ig:true,
+ p:'Free', pu:'', pp:0, dur:90, fix:[[1170,1260]], days:D4, sky:true,
+ st:'ok', stx:'New moon on Nov 9.',
+ why:'The darkest nights of the month fall right on your trip.',
+ info:'The best sky is in the west (Kekaha), the driest side, but any beach without streetlights works. Give your eyes 20 minutes to adjust.',
+ tip:'Red light on your phone and a light jacket.'},
+{id:'kipu-utv', t:'Off-road at Kipu Ranch', op:'Kipu Ranch Adventures · Līhuʻe', cat:'adventure', zone:'LIH',
+ p:'from $190', pu:'per person', pp:190, dur:180, win:[480,900], days:['d10','d11'], book:true,
+ st:'check', stx:'The website shows no closures: confirm hours and availability.',
+ why:'Drive your own UTV past movie sets, waterfalls and the Hulēʻia River.',
+ info:'3 hours, ages 9+, bookable Tuesday–Friday. The ranch is 10 minutes from the airport: it even works on the flight morning.',
+ tip:'Wear clothes that can get red-dirt stained.',
+ url:'https://kiputours.com/'},
+{id:'luau', meal:'dinner', t:'Lūʻau in Smith’s garden', op:'Smith Family Garden Luau · Wailua', cat:'culture', zone:'KAP',
+ p:'$150', pu:'per person, tax included', pp:150, dur:210, fix:[[1005,1215]], days:['d9'], book:true,
+ st:'ok', stx:'Reopened and running as usual.',
+ why:'Pork cooked in an underground imu, a Hawaiian buffet and a Polynesian show in a 30-acre garden.',
+ info:'In November it runs Monday, Wednesday and Friday: in your dates only Monday 9. Check-in 16:45, about 3.5 hours.',
+ tip:'Arrive early for the imu ceremony.',
+ url:'https://smithskauai.com/'},
+{id:'hanalei-pier', t:'Sunset at Hanalei Pier', op:'Hanalei Bay', cat:'sunset', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:60, fix:[[1035,1095]], days:D4, rain:true,
+ st:'ok', stx:'Hanalei beach parks are open.',
+ why:'Waterfall-streaked mountains behind you, surfers on the winter waves in front.',
+ info:'Arrive 30 minutes early to park at Black Pot. Dinner in town afterwards.',
+ tip:'Sunset 17:57. Ten minutes from the 1 Hotel on your last night.'},
+{id:'lumahai', t:'Lumahaʻi Beach lookout', op:'Highway pull-off past Hanalei', cat:'photo', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:20, win:[450,1080], days:ALL,
+ st:'check', stx:'On the road to Hāʻena, which is open (one lane at a time on the Hanalei bridge). The pull-off itself isn’t covered by closure trackers.',
+ why:'The jungle-backed crescent from “South Pacific”, seen from above with black lava rocks and emerald water.',
+ info:'Look, don’t swim: one of the most dangerous beaches on the island in winter. Room for only a few cars.',
+ tip:''},
+{id:'trek-secret', t:'Secret Beach (Kauapea)', op:'Steep trail · Kīlauea', cat:'nature', zone:'KIL', ig:true,
+ p:'Free', pu:'', pp:0, dur:90, win:[480,1020], days:ALL, rain:true,
+ st:'check', stx:'Public access on a hurricane-hit stretch of the north shore: check that the trail is open.',
+ why:'A ten-minute jungle descent to a long, almost empty beach with Kīlauea Lighthouse at the far end.',
+ info:'Huge winter surf: no swimming. The trail is steep and slippery after rain.',
+ tip:'Hiking shoes, not flip-flops.'},
+{id:'kilauea-light', t:'Kīlauea Point lighthouse', op:'National wildlife refuge', cat:'nature', zone:'KIL', ig:true,
+ p:'Ticket', pu:'timed entry on Recreation.gov', dur:45, win:[600,960], lastStart:930, days:['d7'], book:true,
+ st:'ok', stx:'The refuge reopened Oct 14: Wednesday–Saturday 10–16 with a timed Recreation.gov ticket (45 min, last entry 15:30, lighthouse interior closed). In your dates that means Saturday 7 only (Wed 11 is Veterans Day).',
+ why:'The northernmost point of the main Hawaiian islands, with boobies, shearwaters and the first albatross of the season circling the lighthouse.',
+ info:'Bring binoculars. On other days you can still see the lighthouse from the free overlook at the end of Kīlauea Road.',
+ tip:'From the airport it’s 40 minutes: a scenic first afternoon.',
+ url:'https://www.recreation.gov/ticket/facility/300018'},
+{id:'allerton', t:'Allerton Garden', op:'National Tropical Botanical Garden · Poʻipū', cat:'nature', zone:'POI', ig:true,
+ p:'Price on website', pu:'', dur:150, win:[540,990], days:['d7','d10'], book:true,
+ st:'check', stx:'Tours restarted from the South Shore Visitor Center (open Tuesday–Saturday) with fewer spots: days and times to confirm.',
+ why:'The giant buttress-root trees from Jurassic Park and a garden that runs down to the sea.',
+ info:'Guided tour only, with a shuttle from the visitor center on Lāwaʻi Road. Reservation required.',
+ tip:'There’s a sunset version too.',
+ url:'https://ntbg.org/gardens/allerton/'},
+{id:'hindu-monastery', t:'Kauaʻi’s Hindu Monastery', op:'Kadavul & Iraivan temples · Wailua', cat:'culture', zone:'KAP',
+ p:'Free', pu:'reservation required', pp:0, dur:90, fix:[[630,720]], days:ALL, book:true,
+ st:'check', stx:'Visits by online reservation only (late-morning front-grounds access). The Iraivan Temple tour (10:45–11:45) runs only when a volunteer host is available: ask at Kadavul Temple.',
+ why:'A hand-carved white granite temple rising in a jungle garden above the Wailua River: one of the most peaceful places on the island.',
+ info:'Dress modestly (shoulders and knees covered). Quiet voices; photos only where allowed.',
+ tip:'Pair it with ʻŌpaekaʻa Falls and the rainbow eucalyptus on the same road.',
+ url:'https://www.himalayanacademy.com/how-do-i-visit-iraivan-temple/'},
+{id:'wailua-kayak', t:'Kayak the Wailua River', op:'Rental or guided tour · Wailua', cat:'sea', zone:'KAP',
+ p:'≈ $60–150', pu:'rental or tour', pp:75, dur:180, win:[480,840], days:ALL,
+ st:'check', stx:'River reopened (Sept 21); no hiking past the landing. Secret Falls (Uluwehi) closed.',
+ why:'Paddle into the jungle on Hawaiʻi’s most famous navigable river.',
+ info:'Non-resident park fee: $5 per person plus $10 per car. Start early: the wind picks up in the afternoon.',
+ tip:'Fern Grotto is reserved for Smith’s riverboat.'},
+{id:'waimea-poke', wins:[[630,870,'lunch']], t:'Poke and shave ice in Waimea', op:'Ishihara Market + JoJo’s', cat:'food', zone:'WAI',
+ p:'≈ $15–25', pu:'per person', pp:20, dur:45, win:[600,900], days:ALL,
+ st:'check', stx:'Post-hurricane hours to confirm.',
+ why:'The west side’s local lunch: poke from the neighborhood market and shaved ice with real fruit syrups.',
+ info:'Perfect before or after the canyon or the boat from Kekaha.', tip:''},
+{id:'kekaha-sunset', t:'Sunset at Kekaha', op:'9 miles of beach on the west side', cat:'sunset', zone:'WAI', ig:true,
+ p:'Free', pu:'', pp:0, dur:60, fix:[[1035,1095]], days:D4,
+ st:'ok', stx:'The driest side of the island: 5% rain forecast.',
+ why:'The sun drops behind Niʻihau, the private island you can’t visit.',
+ info:'Polihale is closed, but Kekaha has the same horizon. Big surf: watch, don’t swim. 25 minutes from your inn.',
+ tip:'Stay for the stars right after.'},
+{id:'waioli-church', t:'Waiʻoli Huiʻia, the green church', op:'Hanalei town', cat:'photo', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:15, win:[450,1080], days:ALL,
+ st:'check', stx:'Hanalei town and its beach parks are open; the church itself isn’t covered by closure trackers.',
+ why:'A bright green wooden church with a steep roof and waterfall-streaked mountains right behind it.',
+ info:'An active church: photograph from the lawn and keep it quiet, especially on Sunday morning.', tip:''},
+{id:'horseback', t:'Horseback at Princeville Ranch', op:'Princeville Ranch · north shore', cat:'adventure', zone:'HAN',
+ p:'Price on website', pu:'', dur:150, win:[540,960], days:D4, rain:true, book:true,
+ st:'ok', stx:'Horseback rides open (zipline and off-road closed for good).',
+ why:'Green pastures above the north shore, between the Hanalei peaks and the ocean.',
+ info:'Rides and lessons for all levels, from age 4. Book online.',
+ tip:'Long pants and closed shoes.',
+ url:'https://princevilleranch.com/adventures/'},
+{id:'holoholo', t:'Sail and snorkel on the Leila', op:'Holo Holo Charters · Port Allen', cat:'sea', zone:'KAL',
+ p:'$255', pu:'per person, tax included', pp:255, dur:300, fix:[[390,690]], days:D3, sea:'napali', group:'napali', book:true,
+ st:'ok', stx:'Tours resumed Oct 18.',
+ why:'A 50-foot sailing catamaran with breakfast, lunch and a beer after snorkeling.',
+ info:'Check-in 6:30 at Port Allen (15 minutes from your inn), 5 hours. Bigger and more social than the others, but comfortable in rough seas.',
+ tip:'Seasickness pill an hour before.',
+ url:'https://holoholocharters.com/tour/napali-coast-snorkel-excursion/'},
+{id:'kalaheo-cafe', wins:[[390,630,'breakfast']], t:'Sunday breakfast at Kalāheo Café', op:'Kalāheo Café & Coffee Co. · 10 min from the inn', cat:'food', zone:'KAL',
+ p:'≈ $15–25', pu:'per person', pp:20, dur:50, win:[390,630], days:['d8'],
+ st:'check', stx:'Marjorie’s serves no breakfast on Sundays. Café hours after the hurricane not confirmed.',
+ why:'Your inn skips breakfast on Sunday, and this local favorite is just up the road: island coffee and a big breakfast plate.',
+ info:'It gets busy on weekend mornings: go early.', tip:'Pick up a bag of Kauaʻi coffee for home.'},
+{id:'poipu-turtles', t:'Monk seals at Poʻipū', op:'Poʻipū Beach Park', cat:'sea', zone:'POI', ig:true,
+ p:'Free', pu:'', pp:0, dur:75, win:[480,1050], days:ALL,
+ st:'check', stx:'Reopens Nov 7 after cleanup; brown-water advisory at the pavilion.',
+ why:'Hawaiian monk seals (only about 1,600 left) and sea turtles a few feet from shore.',
+ info:'Watch from behind the ropes, at least 50 feet away. Swim only if the lifeguard says it’s ok.',
+ tip:'Easy parking in the morning.'},
+{id:'kee-sunset', t:'Sunset at Kēʻē, the end of the road', op:'Hāʻena State Park', cat:'sunset', zone:'HAE', ig:true,
+ p:'$5', pu:'per person + $20 parking', pp:5, grp:20, dur:90, fix:[[990,1080]], days:D4, rain:true, book:true,
+ st:'ok', stx:'Park reopened Oct 15; non-residents need a reservation.',
+ why:'The Nā Pali cliffs glow orange right above the beach.',
+ info:'Evening parking slot (16:30–sunset). In winter the sea is dangerous: watch from the sand.',
+ tip:'On the way back the Hanalei bridge is one lane at a time.',
+ url:'https://gohaena.com/'},
+{id:'princeville-gardens', t:'Princeville Botanical Gardens', op:'Garden walk + chocolate tasting', cat:'nature', zone:'HAN', ig:true,
+ p:'from $126', pu:'per person', pp:126, dur:180, fix:[[570,750]], days:ALL, book:true,
+ st:'check', stx:'Listed with a 9:30 start; north-shore operators are reopening gradually, so confirm the tour runs.',
+ why:'A guided walk through a tropical garden in Princeville that ends with a chocolate tasting.',
+ info:'About 3 hours of easy walking. The chocolate isn’t grown here, so it complements the Lydgate farm tour.',
+ tip:'Five minutes from your last-night hotel.'},
+{id:'bike-path', t:'E-bike the coastal path', op:'Ke Ala Hele Makalae · Kapaʻa', cat:'adventure', zone:'KAP',
+ p:'≈ $40–70', pu:'rental', pp:55, dur:150, win:[450,1020], days:ALL, pref:'am',
+ st:'ok', stx:'Path open from Lydgate to Kealia and beyond.',
+ why:'A seaside bike path past near-empty coves and the old Kealia pier.',
+ info:'Go early to avoid the headwind on the way back.', tip:''},
+{id:'market', t:'Farmers market', op:'Fruit, flowers and local food', cat:'food', zone:'KAP', ig:true,
+ p:'Free', pu:'cash for purchases', pp:0, dur:60, days:['d7','d9','d10','d11'], perDay:{
+   d7:{w:[990,1080],zone:'KIL',where:'Kīlauea Sunshine Market'},
+   d9:{w:[900,1050],zone:'LIH',where:'Kukui Grove, Līhuʻe'},
+   d10:[{w:[540,780],zone:'KAP',where:'Coconut Marketplace, Kapaʻa'},{w:[840,1020],zone:'HAN',where:'Waipā, Hanalei'}],
+   d11:{w:[540,780],zone:'KAP',where:'Coconut Marketplace, Kapaʻa'}},
+ when:'Sat Kīlauea 16:30 · Mon Līhuʻe 15–17:30 · Tue Kapaʻa 9–13 or Waipā (Hanalei) 14–17 · Wed Kapaʻa 9–13',
+ st:'check', stx:'Schedules from kauai.com (updated Oct 31); nothing on Sunday. Confirm the day before: some markets are still recovering.',
+ why:'Rambutan, lilikoʻi, huge avocados and bananas you’ll never see in a supermarket.',
+ info:'A different market in a different town each day. Tuesday’s Waipā market is on your way to the 1 Hotel.', tip:'Try the lilikoʻi butter.'},
+{id:'makana-shared', t:'12-passenger catamaran', op:'Makana Charters · shared tour', cat:'sea', zone:'WAI',
+ p:'$219', pu:'per person', pp:219, dur:315, fix:[[465,780]], days:D3, sea:'napali', group:'napali', book:true,
+ st:'ok', stx:'Regular tours; confirm the departure harbor (Kīkīaola).',
+ why:'Almost private at a fraction of the price: 12 people max on board.',
+ info:'Same route as the private one: caves, dolphins, snorkeling and lunch. Ages 9+.',
+ tip:'Sit at the bow for photos.',
+ url:'https://makanacharters.com/napali-coast-tours/'},
+{id:'menehune-pond', t:'Menehune Fishpond lookout', op:'Alekoko · Hulemalu Road, Līhuʻe', cat:'photo', zone:'LIH', ig:true,
+ p:'Free', pu:'', pp:0, dur:15, win:[420,1080], days:ALL,
+ st:'check', stx:'Roadside lookout near Nāwiliwili harbor; not covered by closure trackers.',
+ why:'An ancient fishpond wall along the Hulēʻia River with the Hāʻupu ridge behind it. Legend says the menehune built it in a single night.',
+ info:'Ten minutes from the airport: an easy first or last stop.', tip:''},
+{id:'hanapepe', t:'Hanapēpē and its swinging bridge', op:'West-side art town', cat:'culture', zone:'KAL', ig:true,
+ p:'Free', pu:'', pp:0, dur:60, win:[600,1020], days:ALL,
+ st:'check', stx:'Town open; Art Night is on Friday, outside your dates.',
+ why:'Galleries in wooden storefronts, a bridge that sways over the river and an independent bookstore.',
+ info:'Easy to pair with Glass Beach and Kauai Coffee.', tip:''},
+{id:'glass-beach', t:'Glass Beach', op:'Port Allen · ʻEleʻele', cat:'photo', zone:'KAL', ig:true,
+ p:'Free', pu:'', pp:0, dur:30, win:[480,1050], days:ALL,
+ st:'check', stx:'Access is through the harbor area: check after the hurricane.',
+ why:'A cove of sea-polished glass pebbles hidden behind the harbor’s fuel tanks.',
+ info:'Leave the glass where you find it.', tip:''},
+{id:'kauai-coffee', t:'Kauai Coffee estate', op:'Coffee plantation · Kalāheo', cat:'culture', zone:'KAL',
+ p:'Free', pu:'paid farm tours', pp:0, dur:60, win:[540,990], days:ALL,
+ st:'ok', stx:'Visitor Center reopened Sept 15; farm tours bookable.',
+ why:'The largest coffee farm in the US, with free tastings.',
+ info:'Self-guided walk through the rows. Enter from the ʻEleʻele side.', tip:''},
+{id:'koloa-fish', wins:[[630,960,'lunch']], t:'Poke at Kōloa Fish Market', op:'Old Kōloa Town', cat:'food', zone:'POI',
+ p:'≈ $15–20', pu:'per person', pp:18, dur:35, win:[630,960], days:['d7','d9','d10','d11'],
+ st:'check', stx:'Usually closed on Sunday; hours after the hurricane not confirmed.',
+ why:'A tiny counter with some of the best poke and plate lunches on the south side, 15 minutes from your inn.',
+ info:'Take it to Poʻipū Beach Park for a picnic.', tip:''},
+{id:'surf-poipu', t:'Surf lesson in Poʻipū', op:'South-shore surf schools', cat:'sea', zone:'POI', ig:true,
+ p:'≈ $100–150', pu:'per person', pp:120, dur:120, win:[480,720], days:ALL, sea:'south', book:true,
+ st:'check', stx:'Check the school: some south-shore businesses are still recovering.',
+ why:'In winter the north is for pros: down south the waves are small and perfect for learning.',
+ info:'2-hour group lessons in the morning, before the wind picks up.', tip:''},
+{id:'saimin', wins:[[630,840,'lunch'],[1050,1230,'dinner']], t:'Saimin at Hamura’s', op:'Hamura Saimin · Līhuʻe', cat:'food', zone:'LIH',
+ p:'≈ $15', pu:'per person', pp:15, dur:45, win:[630,1230], days:ALL,
+ st:'check', stx:'Post-hurricane hours to confirm.',
+ why:'The noodle soup born on the plantations, served at the counter since 1952. Then lilikoʻi chiffon pie.',
+ info:'A historic spot where you eat elbow to elbow. Minutes from the airport: a perfect first lunch.', tip:''},
+{id:'moloaa', t:'Moloaʻa Bay', op:'Quiet cove on the northeast shore', cat:'photo', zone:'KIL', ig:true,
+ p:'Free', pu:'', pp:0, dur:45, win:[450,1050], days:ALL,
+ st:'check', stx:'Small public beach at the end of Moloaʻa Road; not covered by closure trackers. Very limited parking.',
+ why:'A palm-fringed cove where the opening of “Gilligan’s Island” was filmed, with almost nobody on it.',
+ info:'Winter surf: swim only on a calm day, close to shore. Respect the homes around the road end.', tip:''},
+{id:'hanalei-sup', t:'SUP or kayak on the Hanalei River', op:'Rentals in Hanalei', cat:'sea', zone:'HAN',
+ p:'≈ $50–80', pu:'rental', pp:65, dur:120, win:[540,960], days:ALL,
+ st:'check', stx:'Hanalei was hit by the hurricane: check that rentals are open.',
+ why:'Flat water between taro fields and mountains while the winter waves roar outside the bay.',
+ info:'The river stays calm even with a swell. Head into the bay only if conditions allow.', tip:''},
+{id:'run-hanalei', t:'Run along Hanalei Bay', op:'From the pier to Waiʻoli, on the sand', cat:'run', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:60, wins:[[390,600],[930,1050]], days:ALL, rain:true,
+ st:'ok', stx:'Hanalei beach parks are open.',
+ why:'2.5 miles of firm sand under waterfall-streaked mountains, with surfers on the winter waves.',
+ info:'Run at low tide, on the hard sand near the water. No swimming in a swell.',
+ tip:'Easy from the 1 Hotel on your last morning, then breakfast in town.'},
+{id:'hideaways', t:'Hideaways, the hidden cove', op:'Kaumumene Trail · Princeville', cat:'nature', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:90, win:[480,990], days:ALL,
+ st:'ok', stx:'Trail reopened Sept 25.',
+ why:'A steep descent with ropes to a beach wedged between cliffs.',
+ info:'With a winter swell, no swimming: you go for the view. A short walk from the 1 Hotel.', tip:'Shoes with good grip.'},
+{id:'sunset-sail', meal:'dinner', t:'Nā Pali sunset dinner sail', op:'Capt Andy’s · Port Allen', cat:'sunset', zone:'KAL', ig:true,
+ p:'$260', pu:'per person, dinner included', pp:260, dur:240, fix:[[825,1065]], days:D4, sea:'napali', book:true,
+ st:'ok', stx:'Tours on the calendar; confirm the day before depending on the sea.',
+ why:'Dinner on board while the sun drops behind the cliffs.',
+ info:'65-foot catamaran, no snorkeling: you go for the view and dinner. Check-in 13:45, 15 minutes from your inn.', tip:'',
+ url:'https://www.napali.com/'},
+{id:'lappert', wins:[[660,1260,'snack']], t:'Lappert’s ice cream', op:'Kōloa · Poʻipū', cat:'food', zone:'POI', ig:true,
+ p:'≈ $8', pu:'per person', pp:8, dur:20, win:[660,1260], days:ALL,
+ st:'check', stx:'Hours after the hurricane not confirmed.',
+ why:'Kauaʻi’s own ice cream since 1983: Kauaʻi Pie, guava, lilikoʻi and coconut in a waffle cone.',
+ info:'15 minutes from your inn: an easy after-dinner treat.', tip:''},
+{id:'koloa-rum', wins:[[660,960,'drink']], t:'Kōloa Rum tasting', op:'Kilohana · Līhuʻe', cat:'food', zone:'LIH',
+ p:'Book online', pu:'', dur:45, win:[660,960], lastStart:900, days:['d9','d10','d11'], book:true,
+ st:'check', stx:'Tastings hourly 11–16, Monday–Friday. The Kilohana estate itself is closed: book directly with Kōloa Rum.',
+ why:'Rum made from Kauaʻi sugarcane, with guided tastings.',
+ info:'The driver tastes lightly.', tip:''},
+{id:'spouting-horn', t:'Spouting Horn', op:'Lāwaʻi Road · Poʻipū', cat:'photo', zone:'POI', ig:true,
+ p:'Free', pu:'', pp:0, dur:25, win:[420,1080], days:ALL,
+ st:'ok', stx:'Park open since Sept 16.',
+ why:'A sea geyser blowing through a lava tube, with a roar locals blame on a dragon.',
+ info:'Best with a south swell. Craft stalls in the parking lot. 15 minutes from your inn.', tip:''},
+{id:'fish-market', wins:[[660,870,'lunch'],[1050,1170,'dinner']], t:'Kilauea Fish Market', op:'Kīlauea', cat:'food', zone:'KIL',
+ p:'≈ $20–25', pu:'per person', pp:22, dur:45, win:[660,1170], days:ALL,
+ st:'check', stx:'Post-hurricane hours to confirm.',
+ why:'Ahi wraps and fish of the day to eat outdoors.',
+ info:'A perfect break between the lighthouse and ʻAnini.', tip:''},
+{id:'hanalei-lookout', t:'Hanalei Valley Lookout', op:'Princeville', cat:'photo', zone:'HAN', ig:true,
+ p:'Free', pu:'', pp:0, dur:15, win:[420,1080], days:ALL,
+ st:'ok', stx:'Roadside stop.',
+ why:'Mirror-like taro fields under waterfall-streaked mountains.',
+ info:'A 10-minute stop on the way into Hanalei. Best light in the morning.', tip:''},
+{id:'bar-acuda', wins:[[1050,1260,'dinner']], t:'Tapas dinner at Bar Acuda', op:'Hanalei town', cat:'food', zone:'HAN',
+ p:'≈ $60–80', pu:'per person (estimate)', pp:70, dur:90, win:[1050,1260], days:['d10'], book:true,
+ st:'check', stx:'North-shore restaurants are reopening gradually: check it’s open on Tuesday and reserve.',
+ why:'Small plates of local fish and farm vegetables with a glass of wine in Hanalei: the cozy alternative to the hotel.',
+ info:'Your only night up north is Tuesday 10. Ten minutes from the 1 Hotel.', tip:''},
+{id:'raft-shared', t:'Nā Pali raft + snorkel', op:'Capt Andy’s · shared tour', cat:'sea', zone:'WAI',
+ p:'$229', pu:'per person', pp:229, dur:240, fix:[[450,690],[750,990]], days:D3, sea:'napali', group:'napali', book:true,
+ st:'check', stx:'Departs from Kīkīaola, still listed as closed in state records: ask the operator to confirm.',
+ why:'The same caves as the private version, in a group and at a fraction of the price.',
+ info:'4 hours with snacks and drinks. Departs 7:30 or 12:30.', tip:'',
+ url:'https://www.napali.com/'},
+{id:'fern-grotto', t:'Riverboat to Fern Grotto', op:'Smith’s · Wailua River', cat:'culture', zone:'KAP',
+ p:'≈ $30–40', pu:'per person', pp:35, dur:90, win:[570,930], days:ALL,
+ st:'ok', stx:'Running as usual.',
+ why:'Cruise up the Wailua River to a fern-draped grotto, with Hawaiian songs on board.',
+ info:'1.5 hours, gentle and classic. Kayakers can no longer land at the grotto; the riverboat can.', tip:'',
+ url:'https://smithskauai.com/'},
+{id:'shave-ice', wins:[[720,1050,'snack']], t:'Shave ice in Hanalei', op:'Wishing Well Shave Ice', cat:'food', zone:'HAN', ig:true,
+ p:'≈ $10', pu:'per person', pp:10, dur:30, win:[630,1050], days:ALL,
+ st:'check', stx:'Post-hurricane hours to confirm.',
+ why:'Snow-fine shaved ice with natural syrups and coconut cream.',
+ info:'A historic stand at the entrance to town.', tip:''},
+{id:'hanalei-bread', wins:[[420,600,'breakfast']], t:'Breakfast at Hanalei Bread Co.', op:'Hanalei town · 10 min from the hotel', cat:'food', zone:'HAN', ig:true,
+ p:'≈ $15–25', pu:'per person', pp:20, dur:45, win:[420,600], days:['d11'],
+ st:'check', stx:'North-shore cafés are reopening gradually: check hours.',
+ why:'A bakery-café in Hanalei town for a slow last breakfast: sourdough toast, pastries and good coffee, with the local roosters strutting by.',
+ info:'Then a walk on Hanalei Pier before the 1-hour drive to the airport.', tip:''},
+{id:'koloa-landing', t:'Snorkel at Kōloa Landing', op:'Old harbor ramp · Poʻipū', cat:'sea', zone:'POI',
+ p:'Free', pu:'', pp:0, dur:90, win:[480,960], days:ALL, sea:'south',
+ st:'check', stx:'Department of Health brown-water advisory: check before getting in.',
+ why:'The healthiest reef on the south shore: huge corals and turtles on every swim.',
+ info:'Entry from a slippery ramp, reef shoes needed. For confident swimmers; in winter the south is the calm side. 15 minutes from your inn.', tip:''},
+{id:'kukuiolono', t:'Kukuiolono Park', op:'Kalāheo', cat:'nature', zone:'KAL', ig:true,
+ p:'Free', pu:'', pp:0, dur:40, win:[480,1050], days:ALL,
+ st:'check', stx:'Hours to confirm after the hurricane.',
+ why:'A Japanese garden on a hilltop with a view over the whole south coast and hardly any tourists.',
+ info:'Ten minutes from your inn: a quiet morning walk.', tip:''},
+{id:'old-koloa', t:'Tree Tunnel and Old Kōloa', op:'Maluhia Road · Kōloa', cat:'culture', zone:'POI', ig:true,
+ p:'Free', pu:'', pp:0, dur:45, win:[540,1080], days:ALL,
+ st:'ok', stx:'Road works in Kōloa: possible delays.',
+ why:'A mile of eucalyptus planted in 1911, then the town where Hawaiian sugar began.',
+ info:'Shops and cafés in the old wooden buildings.', tip:''},
+{id:'red-salt', wins:[[1050,1260,'dinner']], t:'Dinner at Red Salt', op:'Koʻa Kea · Poʻipū', cat:'food', zone:'POI',
+ p:'≈ $90+', pu:'per person', pp:90, dur:90, win:[1050,1260], days:D4, book:true,
+ st:'ok', stx:'Open with reduced seating until Nov 15: reserve.',
+ why:'Local fish and sushi in a small oceanfront hotel: the special dinner of the trip, 15 minutes from your inn.',
+ info:'The Beach House is closed until 2027: this is the oceanfront alternative.', tip:''},
+{id:'pono', wins:[[420,840,'lunch']], t:'Poke at Pono Market', op:'Kapaʻa', cat:'food', zone:'KAP',
+ p:'≈ $15', pu:'per person', pp:15, dur:30, win:[420,840], days:['d7','d9','d10','d11'],
+ st:'check', stx:'Closed on Sunday; hours to confirm.',
+ why:'The poke counter locals love, with musubi and plate lunches.',
+ info:'Get it to go and eat on the beach in Kapaʻa.', tip:''},
+{id:'zipline', t:'Zipline over the forest', op:'Kauai Backcountry Adventures · Līhuʻe', cat:'adventure', zone:'LIH', ig:true,
+ p:'Price on website', pu:'', dur:210, win:[450,1050], days:ALL, book:true,
+ st:'ok', stx:'Open and bookable.',
+ why:'Lines strung over the valley and the forest inland from Līhuʻe.',
+ info:'About 3 hours, ages 12+, 100–250 lb (45–113 kg).', tip:'',
+ url:'https://kauaibackcountry.com/'},
+{id:'hanakapiai-beach', t:'Hanakāpīʻai Beach hike', op:'Kalalau Trail · first 2 miles', cat:'nature', zone:'HAE', ig:true,
+ p:'$5', pu:'per person + $20 parking or $45 shuttle', pp:5, grp:20, dur:180, win:[390,1080], days:D4, rain:true, group:'kalalau', book:true,
+ st:'ok', stx:'Day use reopened Oct 15.',
+ why:'The first stretch of Hawaiʻi’s most famous trail, with Nā Pali views.',
+ info:'4 miles (6.5 km) round trip with ups and downs. Never swim: dangerous currents all year.', tip:'',
+ url:'https://gohaena.com/'},
+{id:'brewing', wins:[[900,1230,'drink']], t:'Beer at Kauai Island Brewing', op:'Port Allen', cat:'food', zone:'KAL',
+ p:'≈ $25', pu:'per person', pp:25, dur:60, win:[720,1230], days:ALL,
+ st:'check', stx:'Post-hurricane hours to confirm.',
+ why:'Local beer by the harbor, after the boat or the skydive.',
+ info:'Handy after tours from Port Allen.', tip:''},
+{id:'run-ninini', t:'Run to Ninini Point lighthouse', op:'Kalapakī Bay · Līhuʻe', cat:'run', zone:'LIH',
+ p:'Free', pu:'', pp:0, dur:60, win:[390,690], days:ALL, pref:'early',
+ st:'check', stx:'Coastal route near the Royal Sonesta: check access after the hurricane.',
+ why:'From Kalapakī Bay to the old lighthouse on the point, with planes coming in over the ocean. 10 minutes from the airport.',
+ info:'3–4 miles out and back on golf-course roads and cliff tops.',
+ tip:''},
+{id:'sunrise-kapaa', t:'Sunrise on the east side', op:'Kapaʻa · Wailua', cat:'sunset', zone:'KAP', ig:true,
+ p:'Free', pu:'', pp:0, dur:60, fix:[[395,455]], days:ALL,
+ st:'ok', stx:'Sunrise 6:45. From your inn it’s a 45-minute drive, so leave by 5:50.',
+ why:'The sun rises straight out of the ocean in front of you: the east side is made for sunrise.',
+ info:'Coffee to go and a walk on the coastal path.', tip:''}
+];
+const ACTM = Object.fromEntries(ACT.map((a,i)=>[a.id,Object.assign(a,{order:i})]));
+
+/* ---------- icons ---------- */
+const svg = (p,s=20,extra='') => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${p}</svg>`;
+const IC = {
+  x: svg('<path d="M6 6l12 12M18 6L6 18"/>',28,'stroke-width="2.8"'),
+  heart:'<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M12 20.6s-7.3-4.4-9.4-9C1.2 8.4 3.2 4.8 6.8 4.8c2 0 3.5 1.1 4.2 2.4h2c.7-1.3 2.2-2.4 4.2-2.4 3.6 0 5.6 3.6 4.2 6.8-2.1 4.6-9.4 9-9.4 9z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2l-5.8 3.2 1.2-6.5-4.8-4.5 6.5-.8z"/></svg>',
+  undo: svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>',20),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/>',20),
+  gear: svg('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',19),
+  list: svg('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3"/>',19),
+  clock: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',15),
+  cal: svg('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',15),
+  ticket: svg('<path d="M4 8a2 2 0 002-2h12a2 2 0 002 2v8a2 2 0 00-2 2H6a2 2 0 00-2-2z"/><path d="M14 6v12" stroke-dasharray="2 2"/>',15),
+  car: svg('<path d="M5 16l1.5-5a2 2 0 012-1.4h7a2 2 0 012 1.4L19 16"/><rect x="3.5" y="15" width="17" height="4" rx="1.5"/><circle cx="7.5" cy="19.5" r="1"/><circle cx="16.5" cy="19.5" r="1"/>',16),
+  back: svg('<path d="M15 5l-7 7 7 7"/>',18),
+  close: svg('<path d="M6 6l12 12M18 6L6 18"/>',16),
+  plane: svg('<path d="M3 13l7-1 4-7h2l-2 7 5 1 1.5-2H22l-1 4 1 4h-1.5L19 17l-5 1 2 7h-2l-4-7-7-1z"/>',16),
+  bed: svg('<path d="M3 18V7M3 13h18v5M21 13a3 3 0 00-3-3h-7v3"/><circle cx="7" cy="10.5" r="1.5"/>',16),
+  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',22),
+  part: svg('<path d="M8.5 4.8a4 4 0 015.6 3.6"/><path d="M4.5 9.5l-1.4-.6M6.6 3.6L6 2.2M12.3 2.2l-.6 1.4"/><path d="M7 19h10a3.5 3.5 0 000-7 5 5 0 00-9.6 1.5A2.8 2.8 0 007 19z"/>',22),
+  rain: svg('<path d="M7 15h10a3.5 3.5 0 000-7 5 5 0 00-9.6 1.5A2.8 2.8 0 007 15z"/><path d="M9 18l-1 2.5M13 18l-1 2.5M17 18l-1 2.5"/>',22),
+  wave: svg('<path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M6 10c0-3 2.5-5 5.5-5 2 0 3.5 1 4.5 2.5-2-.5-4 .5-4 2.5"/>',22),
+  mountain: svg('<path d="M3 19l6-11 4 6 2-3 6 8z"/>',22),
+  leaf: svg('<path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14z"/><path d="M5 19l8-8"/>',22),
+  camera: svg('<path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/>',22),
+  shrine: svg('<path d="M3 7h18M5 7l1-3h12l1 3M6 7v13M18 7v13M6 11h12"/>',22),
+  bowl: svg('<path d="M3.5 11h17a8.5 8.5 0 01-17 0z"/><path d="M8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5"/>',22),
+  dusk: svg('<path d="M3 18h18M6 18a6 6 0 0112 0"/><path d="M12 6v2M5.6 9.6L7 11M18.4 9.6L17 11"/>',22),
+  copy: svg('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h3"/>',16),
+  down: svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',16),
+  ext: svg('<path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"/>',14),
+  run: svg('<circle cx="14" cy="4.5" r="2"/><path d="M9 21l3-6 3 2v4M7 12l3-4 4 1 2 4 3 1M10 8l-1 5"/>',22)
+};
+const sized = (ic,n) => ic.replace(/width="\d+" height="\d+"/, `width="${n}" height="${n}"`);
+const CAT_IC = {run:IC.run, sea:IC.wave, adventure:IC.mountain, nature:IC.leaf, photo:IC.camera, culture:IC.shrine, food:IC.bowl, sunset:IC.dusk};
+
+/* ---------- state ---------- */
+const KEY = 'kauai-match-v2', KEY_OLD = 'kauai-match-v1';
+let DEC = {};            // id -> 1 no, 2 yes, 3 hōkū
+let HIST = [];
+let PARTNER = null;      // id -> 1..3
+let PINS = {};           // id -> dayId
+let EXCL = {};           // id -> true (removed from the plan)
+let BOOKED = {};         // id -> true (ticked in the booking list)
+let S = {people:2, carBuf:150};
+let DL = null;           // downloads capability (Claude app)
+const NATIVE = !('claude' in window);   // opened outside Claude (GitHub Pages, local file)
+let lastPlan = null;
+let LF = {dec:'all', cat:'all', q:''};  // list filters
+
+function load(){
+  try{
+    let raw = localStorage.getItem(KEY), migrated = false;
+    if(!raw){ raw = localStorage.getItem(KEY_OLD); migrated = !!raw; }
+    if(!raw) return;
+    const o = JSON.parse(raw);
+    DEC = o.DEC||{}; HIST = o.HIST||[]; PARTNER = o.PARTNER||null; PINS = o.PINS||{}; EXCL = o.EXCL||{}; BOOKED = o.BOOKED||{};
+    if(o.S && o.S.people) S.people = o.S.people;
+    if(!migrated && o.S && o.S.carBuf) S.carBuf = o.S.carBuf;
+    for(const k of Object.keys(DEC)) if(!ACTM[k]) delete DEC[k];
+    for(const k of Object.keys(PINS)) if(!ACTM[k] || !DAY[PINS[k]] || !ACTM[k].days.includes(PINS[k])) delete PINS[k];
+    if(PARTNER) for(const k of Object.keys(PARTNER)) if(!ACTM[k]) delete PARTNER[k];
+    HIST = HIST.filter(id=>DEC[id]);
+    if(migrated) save();
+  }catch(e){}
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({DEC,HIST,PARTNER,PINS,EXCL,BOOKED,S})); }catch(e){} }
+
+/* ---------- helpers ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hm = m => `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`;
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+function durTxt(a){ const m=a.dur; if(m<60) return m+' min'; const h=Math.floor(m/60), r=m%60; return r ? `${h} h ${String(r).padStart(2,'0')}` : `${h} h`; }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800); }
+const carBack = () => FLIGHT_OUT - S.carBuf;
+
+/* ---------- planner ---------- */
+const BUF = 10;
+function confDays(){
+  return [
+    {id:'d7',  start:735, end:1290, from:'LIH', to:'LAW'},   // car by ~12:15 after landing
+    {id:'d8',  start:345, end:1320, from:'LAW', to:'LAW'},   // jet lag helps: 5:45 here is 7:45 in LA
+    {id:'d9',  start:345, end:1320, from:'LAW', to:'LAW'},
+    {id:'d10', start:345, end:1320, from:'LAW', to:'HAN'},   // check out of the inn by 10:30, night in Princeville
+    {id:'d11', start:390, end:carBack(), from:'HAN', to:'LIH'}
+  ];
+}
+function slotsFor(a, d){
+  if(!a.days.includes(d.id)) return [];
+  const out=[];
+  if(a.perDay){
+    for(const p of [].concat(a.perDay[d.id]||[])) for(let s=p.w[0]; s+a.dur<=p.w[1]; s+=15) out.push({s,e:s+a.dur,zone:p.zone,where:p.where});
+    return out;
+  }
+  if(a.fix){ for(const [s,e] of a.fix) out.push({s,e,zone:a.zone,meal:a.meal}); return out; }
+  const wins = a.wins || [[a.win[0], a.win[1]]];
+  for(const [w0,w1,meal] of wins){
+    const last = Math.min(a.lastStart ?? Infinity, w1-a.dur);
+    for(let s=w0; s<=last; s+=15) out.push({s,e:s+a.dur,zone:a.zone,meal:meal||a.meal});
+  }
+  return out;
+}
+function fits(day, sl, d, a, prio){
+  const items = day.items;
+  for(const x of items) if(sl.s < x.e && x.s < sl.e) return null;
+  if(sl.meal==='lunch' || sl.meal==='dinner' || sl.meal==='breakfast'){ for(const x of items) if(x.meal===sl.meal) return null; }
+  if(a && a.cat==='run' && items.some(x=>x.a.cat==='run')) return null;
+  let i=0; while(i<items.length && items[i].s < sl.s) i++;
+  const prev=items[i-1], next=items[i];
+  const pz = prev ? prev.zone : d.from, pe = prev ? prev.e : d.start;
+  const nz = next ? next.zone : d.to,   ns = next ? next.s : d.end;
+  const z = sl.zone==='*' ? pz : sl.zone;
+  const tin = drive(pz,z) + (prev?BUF:0), tout = drive(z,nz) + (next?BUF:0);
+  if(sl.s < pe + tin) return null;
+  if(sl.e + tout > ns) return null;
+  const delta = drive(pz,z) + drive(z,nz) - drive(pz,nz);
+  if(a && (prio||2) < 3){
+    if(a.cat==='food' && delta > 35) return null;
+    if(a.dur <= 30 && delta > 50) return null;
+  }
+  return {i, z, delta};
+}
+function busy(day){ return day.items.reduce((t,x)=>t+(x.e-x.s),0); }
+function quality(a, dId, s){
+  const w = WX[dId]; let q = 0;
+  if(a.sea) q += (w.sc[a.sea]-2)*(a.sea==='napali'?8:5);
+  if(a.rain) q += (w.sc.hike-2)*3;
+  if(a.sky) q += (w.sc.sky-2)*2;
+  if(a.pref==='early') q += s<=480 ? 3 : -(s-480)/60;
+  else if(a.pref==='am') q += s<=600 ? 1.5 : 0;
+  else if(!a.fix && s<480) q -= (480-s)/30;
+  if(dId==='d11') q -= 1.5;
+  return q;
+}
+function score(a, d, sl, f, day){
+  return quality(a, d.id, sl.s) - f.delta/12 - busy(day)/90 - sl.s/2400;
+}
+function insertItem(day,it){ day.items.push(it); day.items.sort((x,y)=>x.s-y.s); }
+function removeItem(day,it){ const k=day.items.indexOf(it); if(k>=0) day.items.splice(k,1); }
+function placeBest(state, conf, L){
+  const a=L.a, pin=PINS[a.id]; let best=null;
+  for(const d of conf){
+    if(pin && d.id!==pin) continue;
+    const day=state[d.id];
+    for(const sl of slotsFor(a,d)){
+      const f=fits(day,sl,d,a,L.prio); if(!f) continue;
+      const sc=score(a,d,sl,f,day);
+      if(!best || sc>best.sc+1e-9) best={d,sl,f,sc};
+    }
+  }
+  if(!best) return false;
+  insertItem(state[best.d.id], {L, a, s:best.sl.s, e:best.sl.e, zone:best.f.z, where:best.sl.where, meal:best.sl.meal, prio:L.prio, pinned:!!pin});
+  return true;
+}
+function dayFits(a, dId){
+  const d = confDays().find(x=>x.id===dId); if(!d) return false;
+  const day={items:[]};
+  return slotsFor(a,d).some(sl=>fits(day,sl,d,a,3));
+}
+function collectLikes(){
+  const out=[];
+  for(const a of ACT){
+    if(EXCL[a.id]) continue;
+    const m = DEC[a.id]||0, p = PARTNER ? (PARTNER[a.id]||0) : 0;
+    const ml = m>=2, pl = p>=2;
+    if(!ml && !pl) continue;
+    let prio = Math.max(ml?m:0, pl?p:0);
+    const match = ml && pl;
+    if(match) prio += 1;
+    out.push({a, prio, match, mine:ml, theirs:pl, star:(m===3||p===3)});
+  }
+  return out;
+}
+function reasonFor(L, state, conf){
+  const a=L.a;
+  const feas = a.days.filter(id=>dayFits(a,id));
+  if(!feas.length) return 'Its times don’t fit your days (you land Saturday at 11:03 and fly Wednesday at 15:04).';
+  if(PINS[a.id]) return `Doesn’t fit on ${DAY[PINS[a.id]].short}: that day is already full.`;
+  const parts=[];
+  for(const id of feas){
+    const d=conf.find(x=>x.id===id), sls=slotsFor(a,d);
+    const its = state[id].items;
+    const hit = its.find(x=>x.meal && sls.some(sl=>sl.meal===x.meal)) || its.find(x=>sls.some(sl=>sl.s < x.e+45 && x.s < sl.e+45));
+    if(hit) parts.push(`${DAY[id].dow} ${hit.a.t}`);
+  }
+  return parts.length ? `Clashes with: ${parts.join(' · ')}.` : 'Your available days are already full.';
+}
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function dayDrive(day, d){ let t=0, z=d.from; for(const x of day.items){ t+=drive(z,x.zone); z=x.zone; } return t+drive(z,d.to); }
+const PW = {1:60, 2:100, 3:600, 4:1200, 5:1500};
+function value(L){ let v = PW[Math.min(L.prio,5)] * (0.35 + 0.65*Math.min(L.a.dur,300)/300); if(L.unique) v *= 1.6; return v; }
+/* lunch: a lunch place, an activity that spans noon (boats and long hikes include or pack lunch), or a free 40 min between 11:00 and 14:30 */
+function lunchInfo(day, d){
+  if(d.id==='d11') return {ok:true};
+  for(const x of day.items) if(x.meal==='lunch' || (x.s<=720 && x.e>=780)) return {ok:true};
+  let t=d.start, z=d.from;
+  for(let i=0;i<=day.items.length;i++){
+    const x=day.items[i], dr = x ? drive(z,x.zone) : 0;
+    // eat at the next stop (after driving) or before leaving: same free time, different position in the noon window
+    for(const [s0,e0] of [[t+dr, x ? x.s : d.end],[t, x ? x.s-dr : d.end]]){
+      const start=Math.max(s0,660), end=Math.min(e0,870);
+      if(end-start>=40) return {ok:true, slot:{before:i, at:Math.min(Math.max(start,720), end-40)}};
+    }
+    if(x){ t=x.e; z=x.zone; }
+  }
+  return {ok:false};
+}
+function evalState(state, conf){
+  let tot=0;
+  for(const d of conf){
+    const day=state[d.id], dr=dayDrive(day,d), b=busy(day);
+    for(const x of day.items) tot += value(x.L) + quality(x.a, d.id, x.s);
+    tot -= dr*0.3;
+    tot -= Math.max(0, b+dr-(d.id==='d7' ? 420 : 660))*0.5;   // landing day: keep it lighter
+    if(!lunchInfo(day,d).ok) tot -= 80;
+  }
+  return tot;
+}
+function cloneState(state){ const st={}; for(const k in state) st[k]={items:state[k].items.map(x=>({...x}))}; return st; }
+function runGreedy(conf, order){
+  const state={}; conf.forEach(d=>state[d.id]={items:[]});
+  const un=[];
+  for(const L of order) if(!placeBest(state,conf,L)) un.push(L);
+  return {state, un};
+}
+function tryInsert(state, conf, L){
+  const a=L.a, pin=PINS[a.id];
+  let best=null, bestScore=evalState(state,conf);
+  for(const d of conf){
+    if(pin && d.id!==pin) continue;
+    const all = slotsFor(a,d);
+    const slots = (a.fix||a.perDay) ? all : all.filter((sl,i)=>i%2===0);
+    for(const sl of slots){
+      const day=state[d.id];
+      if(day.items.some(x=>x.pinned && sl.s < x.e+30 && x.s < sl.e+30)) continue;
+      const bl = day.items.filter(x => sl.s < x.e + 60 && x.s < sl.e + 60);
+      if(!bl.length) continue;
+      const st = cloneState(state), dd = st[d.id];
+      const ev = bl.map(x=>dd.items.find(y=>y.a===x.a));
+      ev.forEach(x=>removeItem(dd,x));
+      const f = fits(dd, sl, d, a, L.prio); if(!f) continue;
+      insertItem(dd, {L,a,s:sl.s,e:sl.e,zone:f.z,where:sl.where,meal:sl.meal,prio:L.prio,pinned:!!pin});
+      const un=[]; for(const x of ev) if(!placeBest(st,conf,x.L)) un.push(x.L);
+      const sc = evalState(st,conf) - un.reduce((t,u)=>t+value(u)*0.2,0);
+      if(sc > bestScore + 1e-6){ bestScore=sc; best={state:st, un}; }
+    }
+  }
+  return best;
+}
+function buildPlan(){
+  const conf = confDays();
+  const likes = collectLikes();
+  const groups={}, cand=[], alts=[];
+  for(const L of likes){ if(L.a.group) (groups[L.a.group] ||= []).push(L); else cand.push(L); }
+  for(const g in groups){
+    const arr = groups[g].sort((x,y)=> (PINS[y.a.id]?1:0)-(PINS[x.a.id]?1:0) || y.prio-x.prio || x.a.order-y.a.order);
+    cand.push(arr[0]); arr.slice(1).forEach(x=>alts.push({L:x, of:arr[0].a}));
+  }
+  cand.forEach(L=>{
+    let n=0, days=0;
+    for(const d of conf){ const k=slotsFor(L.a,d).filter(sl=>fits({items:[]},sl,d,L.a,3)).length; n+=k; if(k) days++; }
+    L.flex=n; L.unique = days===1;
+  });
+  const cls = L => (PINS[L.a.id]?0:100) + (6-Math.min(L.prio,5))*10 + (L.a.cat==='food'?5:0);
+  const base = [...cand].sort((x,y)=> cls(x)-cls(y) || x.flex-y.flex || y.a.dur-x.a.dur || x.a.order-y.a.order);
+  let seed = 7; for(const L of cand) for(const ch of L.a.id+L.prio) seed = (seed*31 + ch.charCodeAt(0))|0;
+  for(const k in PINS) for(const ch of k+PINS[k]) seed = (seed*31 + ch.charCodeAt(0))|0;
+  const rand = rng(seed);
+  const runs=[];
+  const RUNS = cand.length < 3 ? 1 : 100;
+  for(let r=0; r<RUNS; r++){
+    let order = base;
+    if(r>0){ const key=new Map(cand.map(L=>[L, cls(L) + rand()*4 + Math.log2(1+L.flex)*0.15])); order=[...cand].sort((x,y)=>key.get(x)-key.get(y)); }
+    const res = runGreedy(conf, order);
+    res.score = evalState(res.state, conf) - res.un.reduce((t,L)=>t+value(L)*0.2,0);
+    runs.push(res);
+  }
+  runs.sort((x,y)=>y.score-x.score);
+  const seen=new Set(); let best=null;
+  for(const res of runs){
+    const sig = JSON.stringify(conf.map(d=>res.state[d.id].items.map(x=>x.a.id+x.s)));
+    if(seen.has(sig)) continue; seen.add(sig);
+    if(seen.size>6) break;
+    let state=res.state, unplaced=[...res.un].sort((x,y)=>value(y)-value(x));
+    for(let guard=0, i=0; i<unplaced.length && guard<40; guard++){
+      const L = unplaced[i];
+      const r = tryInsert(state, conf, L);
+      if(r){ state = r.state; unplaced.splice(i,1); for(const u of r.un) unplaced.push(u); unplaced.sort((x,y)=>value(y)-value(x)); i=0; }
+      else i++;
+    }
+    const sc = evalState(state,conf) - unplaced.reduce((t,L)=>t+value(L)*0.2,0);
+    if(!best || sc > best.sc + 1e-9) best={state, unplaced, sc};
+  }
+  const state=best.state, unplaced=best.unplaced;
+  unplaced.forEach(L=>L.reason=reasonFor(L,state,conf));
+  return {state, conf, unplaced, alts, likes};
+}
+/* fixed moments around the planned items (check-outs, arrival back) */
+function frame(P, d){
+  const its=P.state[d.id].items, last=its[its.length-1], f={};
+  let k=0; while(k<its.length && its[k].zone===d.from) k++;   // items before leaving the inn's / hotel's area
+  const out=its[k], prevZ = k ? its[k-1].zone : d.from;
+  const leave = out ? out.s - drive(prevZ, out.zone) - (k?BUF:15) : null;
+  f.k = k;
+  if(d.id==='d10') f.checkout = Math.max(d.start, Math.min(630, leave ?? (k ? its[k-1].e+5 : 600)));
+  if(d.id==='d11') f.checkout = Math.max(d.start, leave ?? Math.max(k ? its[k-1].e+5 : d.start, d.end - drive(d.from,'LIH') - 20));
+  f.home = last ? Math.min(d.end, last.e + drive(last.zone, d.to)) : null;
+  return f;
+}
+
+/* ---------- weather fit per card ---------- */
+function rainFor(zone, w){ const side = zone==='*' ? 'W' : ZONES[zone].side; return w.r[side]; }
+function perDayList(a, dId){ return [].concat((a.perDay && a.perDay[dId]) || []); }
+function fitness(a, dId){
+  if(!a.days.includes(dId)) return {c:'na', t:'Closed that day'};
+  if(!dayFits(a,dId)) return {c:'na', t: dId==='d11' ? 'Doesn’t fit before the flight' : (dId==='d7' ? 'Doesn’t fit after landing' : 'Outside its hours')};
+  const w=WX[dId]; let s;
+  if(a.sea) s=w.sc[a.sea]; else if(a.rain) s=w.sc.hike; else if(a.sky) s=w.sc.sky;
+  else { const z = a.perDay ? perDayList(a,dId)[0].zone : a.zone; s = rainFor(z,w)>=35 ? 2 : 3; }
+  const c = s>=3 ? 'good' : s===2 ? 'ok' : 'poor';
+  const labels = {
+    napali:['Rough seas: not advised','Seas easing: doable','Calmer seas: the best day'],
+    north:['North swell: better avoid','North surf easing','Fair conditions up north'],
+    south:['','','South side calm']
+  };
+  const t = a.sea ? labels[a.sea][s-1] : (a.rain ? ['Showers likely','A few showers','Dry'][s-1] : (a.sky ? ['Patchy clouds','Dark, clear sky','Dark, clear sky'][s-1] : (s>=3?'Good weather':'Possible showers')));
+  return {c, t};
+}
+
+/* ---------- header & weather ---------- */
+function renderWx(){
+  $('#wxStrip').innerHTML = DAYS.map(d=>{ const w=WX[d.id]; const side = Math.max(w.r.N,w.r.E);
+    return `<span class="wxd"><span class="wd">${d.short}<i class="sea c-${w.seaC}"></i></span><span class="wr">${sized(IC[w.ic],16)}${side}%</span></span>`; }).join('');
+}
+
+/* ---------- deck ---------- */
+let drag=null, flying=false;
+const queue = () => ACT.filter(a=>!DEC[a.id]);
+function daysTxt(ds){
+  if(ds.length===DAYS.length) return 'Every day';
+  if(ds.length===1) return DAY[ds[0]].short + ' only';
+  const idx = ds.map(id=>DAYS.findIndex(d=>d.id===id)); const cont = idx.every((v,i)=>i===0||v===idx[i-1]+1);
+  return cont ? `${DAY[ds[0]].dow}–${DAY[ds[ds.length-1]].dow}` : ds.map(id=>DAY[id].dow).join(', ');
+}
+function whenTxt(a){
+  if(a.when) return a.when;
+  const ds = a.days.filter(id=>dayFits(a,id));
+  if(!ds.length) return 'Not on your days';
+  const t = a.fix ? a.fix.map(([s])=>hm(s)).join(' or ') : (a.wins||[a.win]).map(([w0,w1])=>`${hm(w0)}–${hm(Math.min(w1,(a.lastStart??w1)+a.dur))}`).join(' or ');
+  return `${daysTxt(ds)} · ${t}`;
+}
+function catChip(a){ return `<span class="chip">${a.ig && a.cat!=='photo' ? sized(IC.camera,13) : ''}${CAT[a.cat].n}</span>`; }
+function cardHTML(a, cls){
+  const ph = HAS_IMG.has(a.id) ? `<img src="img/${a.id}.webp" alt="" decoding="async" draggable="false">` : `<div class="fallback f-${a.cat}">${CAT_IC[a.cat]}</div>`;
+  const st = a.st==='ok' ? '<span class="chip st-ok">Open</span>' : '<span class="chip st-check">To verify</span>';
+  const cells = DAYS.map(d=>{const f=fitness(a,d.id); return `<span class="cell ${f.c}" title="${esc(d.short+': '+f.t)}"><i></i>${d.k}</span>`;}).join('');
+  return `<article class="card ${cls}" data-id="${a.id}" aria-label="${esc(a.t)}">
+    <div class="ph">${ph}
+      <div class="ph-top">${catChip(a)}${st}</div>
+      <div class="stamp yes">Yes</div><div class="stamp no">No</div><div class="stamp star">Hōkū</div>
+      <div class="ph-bot"><h2>${esc(a.t)}</h2><p>${esc(a.op)}</p></div>
+    </div>
+    <div class="cb">
+      <div class="price">${esc(a.p)} ${a.pu?`<small>${esc(a.pu)}</small>`:''}</div>
+      <ul class="facts"><li>${IC.clock}${durTxt(a)}</li><li>${IC.cal}${esc(whenTxt(a))}</li>${a.book?`<li class="bk">${IC.ticket}Book</li>`:''}</ul>
+      <p class="why">${esc(a.why)}</p>
+      <div class="fit"><span>On your days</span><span class="cells">${cells}</span></div>
+    </div>
+  </article>`;
+}
+function renderDeck(){
+  const q = queue(), deck=$('#deck');
+  const total=ACT.length, done=total-q.length;
+  $('#progBar').style.width = (done/total*100)+'%';
+  $('#progTxt').textContent = `${done} / ${total}`;
+  const likes = ACT.filter(a=>DEC[a.id]>=2).length;
+  setPlanBtn();
+  $('#bUndo').disabled = !HIST.length;
+  ['#bNo','#bYes','#bStar','#bInfo'].forEach(s=>$(s).disabled = !q.length);
+  if(!q.length){
+    const stars = ACT.filter(a=>DEC[a.id]===3).length;
+    deck.innerHTML = `<div class="done"><h2>All swiped</h2><p>${likes} yes, ${stars} of them Hōkū. Now the plan.</p>
+      <button class="btn primary" id="bMake">Build the plan</button>
+      <div class="btnrow"><button class="btn" id="bReview">Review the no’s</button><button class="btn" id="bSeeList">See the list</button></div></div>`;
+    $('#bMake').onclick = showPlan;
+    $('#bSeeList').onclick = showList;
+    $('#bReview').onclick = ()=>{ for(const k in DEC) if(DEC[k]===1) delete DEC[k]; HIST=HIST.filter(id=>DEC[id]); save(); renderDeck(); };
+    return;
+  }
+  deck.innerHTML = (q[1]?cardHTML(q[1],'next'):'') + cardHTML(q[0],'top');
+  [q[1],q[2],q[3]].forEach(a=>{ if(a && HAS_IMG.has(a.id)){ const im=new Image(); im.src=`img/${a.id}.webp`; } });
+  bindCard(deck.querySelector('.card.top'));
+}
+function bindCard(el){
+  if(!el) return;
+  el.addEventListener('pointerdown', e=>{
+    if(flying || e.button>0) return;
+    drag={el, x0:e.clientX, y0:e.clientY, dx:0, dy:0, t0:performance.now(), id:e.pointerId};
+    el.setPointerCapture(e.pointerId); el.classList.add('drag'); el.style.transition='none';
+  });
+  el.addEventListener('pointermove', e=>{
+    if(!drag || drag.id!==e.pointerId) return;
+    drag.dx=e.clientX-drag.x0; drag.dy=e.clientY-drag.y0;
+    requestAnimationFrame(()=>{ if(!drag) return; paintDrag(el, drag.dx, drag.dy); });
+  });
+  const end = e=>{
+    if(!drag || drag.id!==e.pointerId) return;
+    const {dx,dy,t0}=drag; drag=null; el.classList.remove('drag');
+    const dt=performance.now()-t0, w=el.offsetWidth;
+    if(Math.abs(dx)<6 && Math.abs(dy)<6 && dt<350){ resetCard(el); openDetails(el.dataset.id); return; }
+    const vx = dx/Math.max(dt,1);
+    if(dy < -110 && Math.abs(dy) > Math.abs(dx)) return decide(3, el);
+    if(dx > w*0.28 || vx > .55) return decide(2, el);
+    if(dx < -w*0.28 || vx < -.55) return decide(1, el);
+    resetCard(el);
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', ()=>{ if(drag){ drag=null; resetCard(el);} });
+}
+function paintDrag(el,dx,dy){
+  el.style.transform = `translate(${dx}px,${dy}px) rotate(${dx*0.05}deg)`;
+  const up = dy<0 && Math.abs(dy)>Math.abs(dx);
+  el.querySelector('.stamp.yes').style.opacity = up?0:Math.max(0,Math.min(1,dx/90));
+  el.querySelector('.stamp.no').style.opacity = up?0:Math.max(0,Math.min(1,-dx/90));
+  el.querySelector('.stamp.star').style.opacity = up?Math.max(0,Math.min(1,-dy/90)):0;
+  const nx=$('#deck .card.next'); if(nx){ const p=Math.min(1,Math.hypot(dx,dy)/160); nx.style.transform=`translateY(${12-12*p}px) scale(${.955+.045*p})`; }
+}
+function resetCard(el){
+  el.style.transition='transform .28s cubic-bezier(.2,.9,.3,1.2)'; el.style.transform='';
+  el.querySelectorAll('.stamp').forEach(s=>s.style.opacity=0);
+  const nx=$('#deck .card.next'); if(nx){ nx.style.transition='transform .28s'; nx.style.transform=''; }
+}
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function decide(v, el){
+  const top = el || $('#deck .card.top'); if(!top || flying) return;
+  const id = top.dataset.id;
+  const commit = ()=>{ DEC[id]=v; HIST.push(id); if(HIST.length>200) HIST.shift(); save(); flying=false; renderDeck(); };
+  if(navigator.vibrate) try{ navigator.vibrate(v===3?[12,30,12]:10); }catch(e){}
+  if(REDUCED){ commit(); return; }
+  flying=true;
+  const w = top.offsetWidth;
+  const st = top.querySelector(v===2?'.stamp.yes':v===1?'.stamp.no':'.stamp.star'); if(st) st.style.opacity=1;
+  const tx = v===2 ? w*1.5 : v===1 ? -w*1.5 : 0, ty = v===3 ? -top.offsetHeight*1.2 : 40;
+  top.style.transition='transform .32s cubic-bezier(.3,.6,.4,1), opacity .32s';
+  top.style.transform=`translate(${tx}px,${ty}px) rotate(${v===3?0:(v===2?18:-18)}deg)`;
+  top.style.opacity='0';
+  setTimeout(commit, 300);
+}
+function undo(){
+  if(flying) return;
+  const id=HIST.pop(); if(!id) return;
+  delete DEC[id]; save(); renderDeck(); toast('Choice undone');
+}
+
+/* ---------- views ---------- */
+function view(){ return !$('#planView').hidden ? 'plan' : !$('#listView').hidden ? 'list' : 'deck'; }
+function setView(v){
+  $('#deckView').hidden = v!=='deck'; $('#listView').hidden = v!=='list'; $('#planView').hidden = v!=='plan';
+  const bl=$('#bList'); bl.classList.toggle('on', v==='list'); bl.setAttribute('aria-pressed', v==='list');
+  bl.setAttribute('aria-label', v==='list' ? 'Back to swiping' : 'All activities as a list');
+  setPlanBtn();
+}
+function setPlanBtn(){
+  const inPlan = view()==='plan', b=$('#bPlan');
+  b.firstChild.textContent = inPlan ? 'Swipe ' : 'Plan ';
+  b.setAttribute('aria-label', inPlan ? 'Back to swiping' : 'Open the plan');
+  $('#likeCount').textContent = inPlan ? queue().length : ACT.filter(a=>DEC[a.id]>=2).length;
+}
+function showPlan(){ setView('plan'); renderPlan(); $('#planView').scrollTop=0; }
+function showDeck(){ setView('deck'); renderDeck(); }
+function showList(){ setView('list'); renderList(); $('#listView').scrollTop=0; }
+function refreshCurrent(){ const v=view(); if(v==='plan') renderPlan(); else if(v==='list') renderList(true); renderDeck(); }
+
+/* ---------- list view ---------- */
+const DEC_F = [['all','All'],['todo','To swipe'],['yes','Yes'],['star','Hōkū'],['no','No']];
+function decKey(a){ const d=DEC[a.id]||0; return d===3?'star':d===2?'yes':d===1?'no':'todo'; }
+function listMatch(a){
+  if(LF.dec!=='all' && decKey(a)!==LF.dec) return false;
+  if(LF.cat==='ig'){ if(!(a.ig || a.cat==='photo')) return false; }
+  else if(LF.cat!=='all' && a.cat!==LF.cat) return false;
+  if(LF.q){ const q=LF.q.toLowerCase(); const hay=(a.t+' '+a.op+' '+a.why+' '+(ZONES[a.zone]?.n||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\u02bb]/g,''); if(!hay.includes(q.normalize('NFD').replace(/[\u0300-\u036f\u02bb]/g,''))) return false; }
+  return true;
+}
+function shortWhen(a){ if(a.when) return a.when.split(' · ').length>2 ? 'Sat, Mon–Wed' : a.when; const ds=a.days.filter(id=>dayFits(a,id)); return ds.length ? daysTxt(ds) : 'Not on your days'; }
+function listSummary(){
+  const n={todo:0,yes:0,star:0,no:0}; for(const a of ACT) n[decKey(a)]++;
+  return n;
+}
+function renderList(keepScroll){
+  const v=$('#listView'), top=v.scrollTop;
+  const n=listSummary();
+  const catOpts=[['all','All'],['ig','Photo-worthy'],...Object.entries(CAT).map(([k,c])=>[k,c.n])];
+  v.innerHTML = `<div class="view-head">
+    <button class="back" id="lBack">${IC.back}Back to swiping</button>
+    <h1>All activities</h1>
+    <p class="sum" id="lSum"></p>
+    <input class="search" type="search" id="lq" placeholder="Search activities and places" value="${esc(LF.q)}" autocomplete="off" aria-label="Search activities">
+    <div class="fchips" role="group" aria-label="Filter by choice">${DEC_F.map(([k,l])=>`<button class="fchip ${LF.dec===k?'on':''}" data-dec="${k}" aria-pressed="${LF.dec===k}">${l}<small>${k==='all'?ACT.length:n[k]}</small></button>`).join('')}</div>
+    <div class="fchips" role="group" aria-label="Filter by type">${catOpts.map(([k,l])=>`<button class="fchip ${LF.cat===k?'on':''}" data-cat="${k}" aria-pressed="${LF.cat===k}">${k==='ig'?sized(IC.camera,14):''}${esc(l)}</button>`).join('')}</div>
+  </div>
+  <ul class="lrows" id="lrows"></ul>
+  <div class="btnrow" style="margin-top:16px"><button class="btn primary" id="lPlan">Build the plan</button>${n.todo?`<button class="btn" id="lSwipe">Swipe the ${n.todo} left</button>`:''}</div>`;
+  renderRows(); updateListSum();
+  $('#lBack',v).onclick=showDeck; $('#lPlan',v).onclick=showPlan;
+  const ls=$('#lSwipe',v); if(ls) ls.onclick=showDeck;
+  $('#lq',v).addEventListener('input', e=>{ LF.q=e.target.value.trim(); renderRows(); });
+  v.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{ LF.dec=b.dataset.dec; renderList(true); });
+  v.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{ LF.cat=b.dataset.cat; renderList(true); });
+  if(keepScroll) v.scrollTop=top;
+}
+function updateListSum(){
+  const n=listSummary(), el=$('#lSum'); if(!el) return;
+  el.innerHTML = `<b>${ACT.length}</b> activities · <b>${n.yes}</b> yes · <b>${n.star}</b> Hōkū · <b>${n.todo}</b> to swipe`;
+}
+function rowHTML(a){
+  const d=DEC[a.id]||0;
+  const thumb = HAS_IMG.has(a.id) ? `<img class="lthumb" src="img/${a.id}.webp" alt="" loading="lazy" decoding="async">` : `<span class="lthumb f-${a.cat}">${sized(CAT_IC[a.cat],22)}</span>`;
+  return `<li class="lrow" data-id="${a.id}">
+    <button class="lopen" data-open="${a.id}">${thumb}<span class="ltx"><b>${esc(a.t)}</b><span>${esc(a.p)} · ${durTxt(a)} · ${esc(shortWhen(a))}</span></span></button>
+    <span class="seg" role="group" aria-label="Your choice for ${esc(a.t)}">
+      <button class="sg no ${d===1?'on':''}" data-v="1" aria-pressed="${d===1}" aria-label="No">${sized(IC.x,15)}</button>
+      <button class="sg yes ${d===2?'on':''}" data-v="2" aria-pressed="${d===2}" aria-label="Yes">${sized(IC.heart,17)}</button>
+      <button class="sg star ${d===3?'on':''}" data-v="3" aria-pressed="${d===3}" aria-label="Hōkū">${sized(IC.star,17)}</button>
+    </span></li>`;
+}
+function renderRows(){
+  const ul=$('#lrows'); if(!ul) return;
+  const rows=ACT.filter(listMatch);
+  ul.innerHTML = rows.length ? rows.map(rowHTML).join('') : `<li class="lempty">Nothing matches these filters.</li>`;
+  ul.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openDetails(b.dataset.open,false,true));
+  ul.querySelectorAll('.lrow').forEach(li=>li.querySelectorAll('.sg').forEach(b=>b.onclick=()=>setDecision(li.dataset.id, +b.dataset.v, li)));
+}
+function setDecision(id, v, li){
+  if(DEC[id]===v){ delete DEC[id]; HIST=HIST.filter(x=>x!==id); }
+  else { DEC[id]=v; }
+  save();
+  if(li) li.querySelectorAll('.sg').forEach(b=>{ const on = DEC[id]===+b.dataset.v; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
+  updateListSum(); setPlanBtn();
+  const lc=$('#lSwipe'); if(lc){ const n=queue().length; if(n) lc.textContent=`Swipe the ${n} left`; else lc.remove(); }
+}
+
+/* ---------- sheets ---------- */
+let sheetTimer=0;
+function openSheet(html){
+  clearTimeout(sheetTimer);
+  const sh=$('#sheet'), bd=$('#backdrop');
+  sh.innerHTML = `<button class="sh-close" aria-label="Close">${IC.close}</button><div class="grab"></div>` + html;
+  sh.hidden=false; bd.hidden=false;
+  requestAnimationFrame(()=>{ sh.classList.add('open'); bd.classList.add('open'); });
+  sh.scrollTop=0;
+  sh.querySelector('.sh-close').onclick=closeSheet;
+  setTimeout(()=>sh.querySelector('.sh-close').focus({preventScroll:true}),50);
+}
+function closeSheet(){
+  const sh=$('#sheet'), bd=$('#backdrop');
+  sh.classList.remove('open'); bd.classList.remove('open');
+  sheetTimer=setTimeout(()=>{ sh.hidden=true; bd.hidden=true; },260);
+}
+function dayRows(a){
+  return `<div class="daylist">${DAYS.map(d=>{const f=fitness(a,d.id); const wh=perDayList(a,d.id).map(p=>p.where).join(' or ');
+    return `<div class="drow"><span class="dl"><i class="dot c-${f.c}"></i>${d.short}</span><span>${esc(f.t)}${wh?' · '+esc(wh):''}</span></div>`;}).join('')}</div>`;
+}
+function creditLine(a){
+  const c=CREDITS[a.id]; if(!c) return '';
+  return `<p class="credit">Photo: ${esc(c.a||'unknown author')}, ${esc(c.l)} · <a class="link" href="${esc(c.u)}" target="_blank" rel="noopener">source</a> · illustrative</p>`;
+}
+function openDetails(id, fromPlan, fromList){
+  const a=ACTM[id]; if(!a) return;
+  const inDeck = !fromPlan && !fromList && queue()[0]?.id===id;
+  const dec = DEC[id];
+  const decTxt = dec===3?'Hōkū':dec===2?'Yes':dec===1?'No':'';
+  let actions='';
+  if(inDeck) actions = `<div class="btnrow"><button class="btn" data-d="1">${sized(IC.x,18)}No</button><button class="btn" data-d="3">${sized(IC.star,18)}Hōkū</button><button class="btn primary" data-d="2">Yes</button></div>`;
+  else if(fromPlan) actions = planItemActions(a);
+  else actions = `<div class="btnrow"><button class="btn" data-set="1">No</button><button class="btn" data-set="3">Hōkū</button><button class="btn primary" data-set="2">Yes</button></div><p class="fine">Current choice: ${decTxt||'none yet'}</p>`;
+  openSheet(`
+    ${HAS_IMG.has(a.id)?`<img class="hero" src="img/${a.id}.webp" alt="">`:''}
+    <h2 id="sheetTitle" style="margin-top:12px">${esc(a.t)}</h2>
+    <p class="sub">${esc(a.op)} · ${esc(a.zone==='*'?'anywhere you like':ZONES[a.zone].n)}</p>
+    <p>${esc(a.why)}</p>
+    <dl class="kv">
+      <dt>Price</dt><dd>${esc(a.p)} ${esc(a.pu||'')}</dd>
+      <dt>Duration</dt><dd>${durTxt(a)}${a.dur>=180?' (incl. check-in)':''}</dd>
+      <dt>When</dt><dd>${esc(whenTxt(a))}</dd>
+      <dt>Booking</dt><dd>${a.book?'Yes, as soon as possible':'Not needed'}</dd>
+      <dt>Status</dt><dd>${a.st==='ok'?'Open':'To verify'}</dd>
+    </dl>
+    <h3>After the hurricane</h3><p>${esc(a.stx)}</p>
+    <h3>On your days (weather & hours)</h3>${dayRows(a)}
+    <h3>Good to know</h3><p>${esc(a.info)}</p>${a.tip?`<p class="fine">${esc(a.tip)}</p>`:''}
+    ${a.url?`<p><a class="link" href="${esc(a.url)}" target="_blank" rel="noopener">Official website ${IC.ext.replace('<svg','<svg style="display:inline;vertical-align:-2px"')}</a></p>`:''}
+    ${actions}
+    ${creditLine(a)}
+  `);
+  const sh=$('#sheet');
+  sh.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ closeSheet(); setTimeout(()=>decide(+b.dataset.d),180); });
+  sh.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{ DEC[id]=+b.dataset.set; save(); closeSheet(); refreshCurrent(); });
+  bindPlanItemActions(sh, a);
+}
+function openWeather(){
+  openSheet(`<h2 id="sheetTitle">Weather & sea</h2>
+   <p class="sub">National Weather Service (NWS Honolulu), forecasts issued Nov 5 at 9 am. Days 28–32 °C (82–90 °F), nights 22–23 °C (72–73 °F). Sunrise 6:45, sunset 17:57.</p>
+   <div class="wxtable">${DAYS.map(d=>{const w=WX[d.id];
+     return `<div class="wxrow">${IC[w.ic]}<div><b>${d.name}</b><span class="rr">Rain: north ${w.r.N}% · east ${w.r.E}% · south ${w.r.S}% · west ${w.r.W}%<br>Sea toward the Nā Pali: ${esc(w.sea)}</span><p style="margin:4px 0 0">${esc(w.txt)}</p></div></div>`;}).join('')}</div>
+   <h3>How the plan uses it</h3>
+   <p>Nā Pali boats go on the calmest-sea day, trails with stream crossings on the driest day, north-shore snorkeling away from the swells. The south and west, where you’re staying, stay dry all week.</p>
+   <p class="fine">Colored dot on each day: sea good, fair or rough. Percentage: rain on the northeast side, the wettest.</p>`);
+}
+function openSettings(){
+  openSheet(`<h2 id="sheetTitle">Your trip</h2>
+   <dl class="kv">
+     <dt>Arrive</dt><dd>Sat 7 Nov · 11:03 at Līhuʻe (LIH) from LAX · Turo car</dd>
+     <dt>Nights 7–9</dt><dd>${INN}, Lāwaʻi · 20 min from the airport</dd>
+     <dt>Night 10</dt><dd>${HOTEL}, Princeville</dd>
+     <dt>Depart</dt><dd>Wed 11 Nov · 15:04 from LIH to LAX (lands 22:42)</dd>
+   </dl>
+   <h3>At ${INN_SHORT}</h3>
+   <p class="fine">Check-in from 15:00, early check-in already arranged. Check-out Tuesday by 10:30. Full breakfast Monday–Saturday (none on Sunday), snacks 24/7. Their free activity desk can book tours for you.</p>
+   <div class="duo-grid">
+    <div class="field">People (for cost estimates)<div class="stepper"><button id="pMinus" aria-label="One person fewer">−</button><output id="pOut">${S.people}</output><button id="pPlus" aria-label="One more person">+</button></div></div>
+    <label class="field" for="selBuf">Return the car on Wednesday<select id="selBuf">${[[120,'2 h before the flight'],[150,'2 h 30 before the flight'],[180,'3 h before the flight']].map(([m,l])=>`<option value="${m}" ${m===S.carBuf?'selected':''}>${l} · ${hm(FLIGHT_OUT-m)}</option>`).join('')}</select></label>
+   </div>
+   <p class="fine" style="margin-top:10px">Bags for the mainland go through the agriculture check before check-in, so plan to be at the airport about 2 hours early.</p>
+   <h3>Start over</h3>
+   <div class="btnrow"><button class="btn" id="bReset">Clear all choices</button></div>
+   <p class="fine" id="resetMsg" hidden>Tap again to confirm: you’ll lose every swipe.</p>`);
+  const sh=$('#sheet');
+  const upd=()=>{ save(); refreshCurrent(); };
+  $('#pMinus',sh).onclick=()=>{ S.people=Math.max(1,S.people-1); $('#pOut',sh).textContent=S.people; upd(); };
+  $('#pPlus',sh).onclick=()=>{ S.people=Math.min(12,S.people+1); $('#pOut',sh).textContent=S.people; upd(); };
+  $('#selBuf',sh).onchange=e=>{ S.carBuf=+e.target.value; upd(); };
+  let armed=false;
+  $('#bReset',sh).onclick=()=>{ if(!armed){ armed=true; $('#resetMsg',sh).hidden=false; $('#bReset',sh).textContent='Yes, clear everything'; return; }
+    DEC={}; HIST=[]; PINS={}; EXCL={}; BOOKED={}; PARTNER=null; save(); closeSheet(); showDeck(); toast('Starting over'); };
+}
+
+/* ---------- plan view ---------- */
+function costOf(a){ return (a.pp||0)*S.people + (a.grp||0); }
+function itemTags(it){
+  const t=[];
+  if(it.L.match) t.push('<span class="tag match">Match</span>');
+  if(it.L.star) t.push('<span class="tag star">Hōkū</span>');
+  if(it.a.book) t.push(`<span class="tag book">${BOOKED[it.a.id]?'Booked':'Book'}</span>`);
+  if(it.a.st!=='ok') t.push('<span class="tag">To verify</span>');
+  if(it.pinned) t.push('<span class="tag">Pinned</span>');
+  return t.join('');
+}
+function zoneName(z){ return z==='*' ? '' : ZONES[z].s; }
+function fixedEv(time, title, meta, icon){
+  return `<li class="ev fixed"><time>${time}</time><div class="main"><div><h3>${title}</h3>${meta?`<div class="meta">${meta}</div>`:''}</div><span class="thumb" style="background:none;color:var(--muted)">${icon||''}</span></div></li>`;
+}
+function driveRow(a,b){
+  const m=drive(a,b); if(!m || a===b) return '';
+  return `<li class="drive"><span></span><span>${IC.car}${m} min drive · ${esc(zoneName(a))} → ${esc(zoneName(b))}</span></li>`;
+}
+function stayLine(id){
+  return {
+    d7:`Land 11:03 · night at ${INN_SHORT} (early check-in arranged)`,
+    d8:`Night at ${INN_SHORT} · no inn breakfast on Sundays`,
+    d9:`Breakfast at the inn · night at ${INN_SHORT}`,
+    d10:`Breakfast, then check out by 10:30 · night at ${HOTEL}`,
+    d11:`Car back by ${hm(carBack())} · flight ${hm(FLIGHT_OUT)}`
+  }[id];
+}
+function isUnpriced(a){ return !a.pp && !a.grp && !['Free','By donation'].includes(a.p); }
+function renderPlan(){
+  const P = buildPlan(); lastPlan=P;
+  const v=$('#planView');
+  const items = P.conf.flatMap(d=>P.state[d.id].items);
+  const total = items.reduce((t,x)=>t+costOf(x.a),0);
+  const unknown = items.filter(x=>isUnpriced(x.a)).length;
+  const books = items.filter(x=>x.a.book);
+  const likesN = P.likes.length;
+  const canDl = !!DL || NATIVE;
+  const dlNote = DL ? 'The .ics comes inside a .zip: open it and import it into Google, Apple or Outlook Calendar.'
+    : NATIVE ? 'Import the .ics file into Google, Apple or Outlook Calendar.'
+    : 'Calendar download works in the Claude app; here you can copy the text or add each event to Google Calendar from its details.';
+
+  let h = `<div class="view-head">
+    <button class="back" id="bBack">${IC.back}Swipe more activities</button>
+    <h1>Your plan</h1>
+    <p class="sum"><b>${items.length}</b> activities planned from ${likesN} picks · about <b>${money(total)}</b> for ${S.people} ${S.people===1?'person':'people'}${unknown?` + ${unknown} with price to check`:''}</p>
+    <div class="btnrow"><button class="btn primary" id="bIcs" ${canDl?'':'hidden'}>${IC.down}Calendar (.ics)</button><button class="btn" id="bCopy">${IC.copy}Copy as text</button></div>
+    <p class="note">${dlNote}</p>
+  </div>`;
+
+  if(!likesN){
+    h += `<div class="panel"><h3>No picks yet</h3><p>Swipe the activities, or tick them in the list: the plan builds itself.</p><div class="btnrow"><button class="btn primary" id="bBack2">Start swiping</button><button class="btn" id="bToList">Open the list</button></div></div>`;
+    v.innerHTML=h; $('#bBack').onclick=showDeck; $('#bBack2').onclick=showDeck; $('#bToList').onclick=showList; return;
+  }
+
+  const code = myCode();
+  const pStats = PARTNER ? (()=>{ let m=0,o=0; for(const a of ACT){ const x=(DEC[a.id]||0)>=2, y=(PARTNER[a.id]||0)>=2; if(x&&y) m++; else if(y) o++; } return `Merged: ${m} matches, ${o} picks only the other person made.`; })() : '';
+  h += `<details class="panel" id="duo" ${PARTNER?'open':''}><summary>Two of you? Merge your picks <span class="fine">${PARTNER?'on':''}</span></summary>
+     <div class="duo-grid">
+       <label class="field" for="myCode">Your code (send it to the other person)<span class="inline"><input id="myCode" readonly value="${code}"><button class="btn small" id="bCode">${IC.copy}Copy</button></span></label>
+       <label class="field" for="theirCode">The other person’s code<span class="inline"><input id="theirCode" placeholder="K…" autocomplete="off" spellcheck="false"><button class="btn small primary" id="bJoin">Merge</button></span></label>
+       <p class="fine" id="duoMsg">${PARTNER?esc(pStats)+' Matches count as Hōkū.':'Activities you both like become a “Match” and get priority in the plan.'}</p>
+       ${PARTNER?'<button class="btn small" id="bUnjoin">Unlink</button>':''}
+     </div></details>`;
+
+  if(books.length){
+    h += `<div class="panel"><h3>Book now</h3><ul class="booklist">${books.map(x=>`<li><input type="checkbox" id="bk-${x.a.id}" ${BOOKED[x.a.id]?'checked':''} aria-label="Booked: ${esc(x.a.t)}"><label for="bk-${x.a.id}"><b>${esc(x.a.t)}</b> · ${DAY[dayOf(P,x)].short} ${hm(x.s)}<small>${esc(bookHint(x.a))}${x.a.url?` · <a class="link" href="${esc(x.a.url)}" target="_blank" rel="noopener">website</a>`:''}</small></label></li>`).join('')}</ul>
+      <p class="fine" style="margin:10px 0 0">${INN_SHORT} activity desk books tours for free: you can send them this list.</p></div>`;
+  }
+
+  for(const d of P.conf){
+    const w=WX[d.id], its=P.state[d.id].items, dd=DAY[d.id], f=frame(P,d);
+    const noLunch = its.length && !lunchInfo(P.state[d.id], d).ok;
+    h += `<section class="day"><div class="day-h"><h2>${dd.name}</h2><span class="dwx">${sized(IC[w.ic],18)}${esc(w.line)}</span></div><p class="day-sub">${esc(stayLine(d.id))}${noLunch?' · <b>no real lunch break</b>: grab food between stops':''}</p><ul class="tl">`;
+    if(d.id==='d7') h += fixedEv(hm(FLIGHT_IN), 'Land at Līhuʻe (LIH) · pick up the Turo car', `Early check-in at ${INN_SHORT} is arranged: drop the bags whenever it suits (20 min away).`, IC.plane);
+    const checkoutEv = d.id==='d10' ? fixedEv(hm(f.checkout), `Check out of ${INN_SHORT}`, 'By 10:30. Keep bags out of sight in trailhead parking lots.', IC.bed)
+      : d.id==='d11' ? fixedEv(hm(f.checkout), `Check out of ${HOTEL}`, 'About 1 hour to the airport.', IC.bed) : '';
+    if(!its.length) h += `<li class="empty-day">${d.id==='d11'?'Free morning: a slow breakfast, then the airport.':'Free day. Add something from the list or keep swiping.'}</li>`;
+    let pz = d.from;
+    const ls = lunchInfo(P.state[d.id], d).slot;
+    const lunchRow = ls ? `<li class="drive"><span>${hm(ls.at)}</span><span>${sized(IC.bowl,16)}Lunch break: eat nearby</span></li>` : '';
+    its.forEach((it,i)=>{
+      if(i===f.k) h += checkoutEv;
+      h += driveRow(pz, it.zone);
+      if(ls && ls.before===i) h += lunchRow;
+      const thumb = HAS_IMG.has(it.a.id) ? `<img class="thumb" src="img/${it.a.id}.webp" alt="" loading="lazy">` : `<span class="thumb f-${it.a.cat}">${CAT_IC[it.a.cat]}</span>`;
+      const price = it.a.pp||it.a.grp ? money(costOf(it.a)) : esc(it.a.p);
+      h += `<li class="ev item" data-id="${it.a.id}" tabindex="0" role="button" aria-label="${esc(it.a.t)}, ${hm(it.s)}"><time>${hm(it.s)}<small>${hm(it.e)}</small></time>
+        <div class="main"><div><h3>${esc(it.a.t)}</h3><div class="meta">${esc(it.where || it.a.op)} · ${price}</div><div class="tags">${itemTags(it)}</div></div>${thumb}</div></li>`;
+      pz = it.zone;
+    });
+    if(f.k===its.length) h += checkoutEv;
+    if(ls && ls.before===its.length) h += lunchRow;
+    if(d.id==='d11'){
+      h += driveRow(pz,'LIH');
+      h += fixedEv(hm(carBack()),'Return the Turo car · Līhuʻe airport','Then the agriculture check for bags and security.', IC.car);
+      h += fixedEv(hm(FLIGHT_OUT),'Flight LIH → LAX', 'Lands in Los Angeles at 22:42', IC.plane);
+    } else {
+      h += driveRow(pz, d.to);
+      h += fixedEv(f.home!=null ? hm(f.home) : '', d.id==='d10' ? `Check in at ${HOTEL}` : `Back at ${INN_SHORT}`, d.id==='d10' ? 'Princeville · your last night' : 'Lāwaʻi', IC.bed);
+    }
+    h += `</ul></section>`;
+  }
+
+  if(P.unplaced.length){
+    h += `<div class="panel"><h3>Doesn’t fit (yet)</h3><ul class="unp">${P.unplaced.map(L=>{
+      const feas = L.a.days.filter(id=>dayFits(L.a,id));
+      return `<li><b>${esc(L.a.t)}</b><span class="why2">${esc(L.reason)}</span><div class="chips">${feas.map(id=>`<button class="dchip" data-force="${L.a.id}" data-day="${id}">Put on ${DAY[id].short}</button>`).join('')}<button class="dchip" data-drop="${L.a.id}">Remove</button></div></li>`; }).join('')}</ul>
+      <p class="fine" style="margin-top:10px">“Put on” pins the activity to that day and moves the rest around; whatever no longer fits lands here.</p></div>`;
+  }
+  if(P.alts.length){
+    h += `<div class="panel"><h3>Alternatives set aside</h3><ul class="unp">${P.alts.map(x=>`<li><b>${esc(x.L.a.t)}</b><span class="why2">Same kind of outing as “${esc(x.of.t)}”: the plan keeps one. To switch, give this one a Hōkū or pick a day.</span><div class="chips">${x.L.a.days.filter(id=>dayFits(x.L.a,id)).map(id=>`<button class="dchip" data-force="${x.L.a.id}" data-day="${id}" data-swap="${x.of.id}">Use this on ${DAY[id].short}</button>`).join('')}</div></li>`).join('')}</ul></div>`;
+  }
+  const pins = Object.keys(PINS).length, ex = Object.keys(EXCL).length;
+  if(pins||ex) h += `<div class="btnrow" style="margin-top:14px">${pins?`<button class="btn small" id="bUnpin">Unpin ${pins} ${pins===1?'activity':'activities'}</button>`:''}${ex?`<button class="btn small" id="bUnex">Bring back ${ex} removed</button>`:''}</div>`;
+
+  h += `<footer class="foot">
+    <span>Hours and status checked on Nov 5, 2026 with operators, Hawaiʻi State Parks (DLNR) and the NWS. After Hurricane Lowell things change fast: re-check the day before.</span>
+    <span>Drive times are estimates in normal traffic; the Hanalei bridge is one lane at a time.</span>
+    <button class="btn small" id="bCredits" style="justify-self:start">Sources and photo credits</button>
+  </footer>`;
+  v.innerHTML = h;
+  bindPlan(P);
+}
+function dayOf(P,it){ for(const d of P.conf) if(P.state[d.id].items.includes(it)) return d.id; return 'd8'; }
+function bookHint(a){
+  const H = {
+    'hanakapiai-falls':'gohaena.com: entry + parking for the morning and afternoon slots, or the shuttle from Waipā/Princeville',
+    'hanakapiai-beach':'gohaena.com: entry + morning parking, or the shuttle',
+    'kee-sunset':'gohaena.com: entry + evening parking slot',
+    'lawai-center':'Text (808) 639-5952 or email info@lawaicenter.org',
+    'limahuli':'Reserve on the NTBG site (not needed if you arrive on the Hāʻena shuttle)',
+    'kilauea-light':'Timed ticket on Recreation.gov (Saturday only)',
+    'welina':'Reserve a sunset table at check-in (or call the hotel ahead)',
+    'hindu-monastery':'Online reservation for late-morning front-grounds access',
+    'photoshoot':'Book a local photographer a few days ahead',
+    'chocolate':'Book the Lydgate Farms tour online (direct or through a tour site)',
+    'princeville-gardens':'Book online; confirm the 9:30 tour runs'
+  };
+  if(H[a.id]) return H[a.id];
+  return a.group==='napali' ? 'Ask for the departure harbor and the rough-sea policy' : 'Book on the operator’s website';
+}
+function bindPlan(P){
+  const v=$('#planView');
+  $('#bBack',v).onclick=showDeck;
+  $('#bCopy',v).onclick=()=>copyText(planText(P));
+  const bi=$('#bIcs',v); if(bi) bi.onclick=()=>exportIcs(P);
+  v.querySelectorAll('.ev.item').forEach(el=>{
+    el.onclick=()=>openDetails(el.dataset.id,true);
+    el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openDetails(el.dataset.id,true);} };
+  });
+  v.querySelectorAll('.booklist input').forEach(cb=>cb.onchange=()=>{ const id=cb.id.slice(3); if(cb.checked) BOOKED[id]=true; else delete BOOKED[id]; save(); });
+  v.querySelectorAll('[data-force]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.force; PINS[id]=b.dataset.day;
+    if(b.dataset.swap){ delete PINS[b.dataset.swap]; if((DEC[id]||0)<3) DEC[id]=3; if(DEC[b.dataset.swap]===3) DEC[b.dataset.swap]=2; }
+    save(); renderPlan(); toast(`${ACTM[id].t}: ${DAY[b.dataset.day].short}`); });
+  v.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>{ EXCL[b.dataset.drop]=true; delete PINS[b.dataset.drop]; save(); renderPlan(); toast('Removed from the plan'); });
+  const up=$('#bUnpin',v); if(up) up.onclick=()=>{ PINS={}; save(); renderPlan(); };
+  const ue=$('#bUnex',v); if(ue) ue.onclick=()=>{ EXCL={}; save(); renderPlan(); };
+  $('#bCredits',v).onclick=openCredits;
+  $('#bCode',v).onclick=()=>copyText($('#myCode',v).value,'Code copied');
+  $('#bJoin',v).onclick=()=>{ const r=readCode($('#theirCode',v).value); if(!r){ $('#duoMsg',v).textContent='That code doesn’t work: it must start with K and come from this same app.'; return; } PARTNER=r; save(); renderPlan(); toast('Picks merged'); };
+  const uj=$('#bUnjoin',v); if(uj) uj.onclick=()=>{ PARTNER=null; save(); renderPlan(); };
+}
+function planItemActions(a){
+  const P=lastPlan; let cur=null;
+  if(P) for(const d of P.conf) for(const it of P.state[d.id].items) if(it.a.id===a.id) cur={d:d.id,it};
+  const feas = a.days.filter(id=>dayFits(a,id));
+  const gcal = cur ? `<a class="btn small" href="${esc(gcalUrl(a,cur.d,cur.it))}" target="_blank" rel="noopener">${IC.cal}Add to Google Calendar</a>` : '';
+  return `<h3>In the plan</h3>
+    <p>${cur?`${DAY[cur.d].name}, ${hm(cur.it.s)}–${hm(cur.it.e)}${cur.it.where?' · '+esc(cur.it.where):''}`:'Not placed'}</p>
+    <div class="chips">${feas.map(id=>`<button class="dchip ${PINS[a.id]===id?'on':''}" data-pin="${id}">${DAY[id].short}</button>`).join('')}${PINS[a.id]?'<button class="dchip" data-pin="">Let the plan choose</button>':''}</div>
+    <div class="btnrow">${gcal}<button class="btn small" data-excl="1">Remove from the plan</button></div>`;
+}
+function bindPlanItemActions(sh,a){
+  sh.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{ if(b.dataset.pin) PINS[a.id]=b.dataset.pin; else delete PINS[a.id]; save(); closeSheet(); renderPlan(); toast(b.dataset.pin?`Moved to ${DAY[b.dataset.pin].short}`:'The plan picks the day'); });
+  const ex=sh.querySelector('[data-excl]'); if(ex) ex.onclick=()=>{ EXCL[a.id]=true; delete PINS[a.id]; save(); closeSheet(); renderPlan(); toast('Removed from the plan'); };
+}
+function openCredits(){
+  const rows = ACT.filter(a=>CREDITS[a.id]).map(a=>{const c=CREDITS[a.id]; return `<li>${esc(a.t)}: ${esc(c.a||'unknown author')}, ${esc(c.l)} · <a href="${esc(c.u)}" target="_blank" rel="noopener">file</a></li>`;}).join('');
+  openSheet(`<h2 id="sheetTitle">Sources and credits</h2>
+   <h3>Sources (Nov 5, 2026)</h3>
+   <ul class="credits">
+    <li><a href="https://forecast.weather.gov/product.php?site=HFO&issuedby=HFO&product=CWF" target="_blank" rel="noopener">NWS Honolulu</a>: point forecasts, coastal waters, surf zone, forecast discussion</li>
+    <li><a href="https://dlnr.hawaii.gov/dsp/important-park-notices/" target="_blank" rel="noopener">Hawaiʻi State Parks</a>: notices on Hāʻena, Waimea Canyon, Kōkeʻe, Polihale, Wailua River</li>
+    <li><a href="https://gohaena.com/info-faqs/" target="_blank" rel="noopener">Go Hāʻena</a>: prices, parking slots, shuttle</li>
+    <li><a href="https://bitessightsflights.com/kauai-closures/" target="_blank" rel="noopener">Kauaʻi closures tracker</a> (updated Nov 5)</li>
+    <li><a href="https://www.kauai.com/kauai-farmers-markets" target="_blank" rel="noopener">kauai.com farmers markets</a> (updated Oct 31)</li>
+    <li><a href="https://www.thegardenisland.com/?p=425496" target="_blank" rel="noopener">The Garden Island</a>: 1 Hotel Hanalei Bay reopening; <a href="https://www.princeville.com/press/cocktails-1-hotel-hanalei-bay" target="_blank" rel="noopener">Princeville</a>: its restaurants</li>
+    <li>Operator websites: Makana Charters, Capt Andy’s, Holo Holo, Kauai Backcountry, Kipu Ranch, Princeville Ranch, Skydive Kauai, Smith’s, Lāwaʻi Center, NTBG, Himalayan Academy, Recreation.gov</li>
+   </ul>
+   <h3>Photos (Wikimedia Commons and Flickr via Openverse, Creative Commons)</h3><p class="fine">Photos are illustrative and may not show the exact place or operator.</p><ul class="credits">${rows}</ul>`);
+}
+
+/* ---------- export ---------- */
+function utc(dateStr, min){ const [y,m,d]=dateStr.split('-').map(Number); const t=new Date(Date.UTC(y,m-1,d, 10, 0) + min*60000); return t.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''); }
+function evDesc(a){
+  return [a.why, `Price: ${a.p} ${a.pu||''}`.trim(), a.book?`Booking: ${bookHint(a)}`:'', a.st!=='ok'?`To verify: ${a.stx}`:'', a.url||''].filter(Boolean).join('\n');
+}
+function evLoc(a, it){ return `${it.where || a.op}, Kauaʻi`; }
+function gcalUrl(a, dId, it){
+  const q = new URLSearchParams({action:'TEMPLATE', text:a.t, dates:`${utc(DAY[dId].date,it.s)}/${utc(DAY[dId].date,it.e)}`, details:evDesc(a), location:evLoc(a,it), ctz:'Pacific/Honolulu'});
+  return 'https://calendar.google.com/calendar/render?' + q.toString();
+}
+function icsEsc(s){ return String(s).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;'); }
+function fold(line){ const out=[]; let cur=''; let bytes=0; const enc=new TextEncoder();
+  for(const ch of line){ const b=enc.encode(ch).length; if(bytes+b>73){ out.push(cur); cur=' '+ch; bytes=1+b; } else { cur+=ch; bytes+=b; } }
+  out.push(cur); return out.join('\r\n'); }
+function buildIcs(P){
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Kauai Match//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Kauaʻi · Nov 7–11','X-WR-TIMEZONE:Pacific/Honolulu'];
+  const stamp = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const ev=(uid,date,s,e,title,loc,desc)=>{ L.push('BEGIN:VEVENT',`UID:${uid}@kauai-match`,`DTSTAMP:${stamp}`,`DTSTART:${utc(date,s)}`,`DTEND:${utc(date,e)}`,fold('SUMMARY:'+icsEsc(title)),fold('LOCATION:'+icsEsc(loc)),fold('DESCRIPTION:'+icsEsc(desc)),'END:VEVENT'); };
+  ev('arrive','2026-11-07',FLIGHT_IN,FLIGHT_IN+45,'Land at Līhuʻe · pick up the Turo car','Līhuʻe Airport (LIH)',`Flight from LAX. Then 20 min to ${INN}, Lāwaʻi (early check-in arranged).`);
+  for(const d of P.conf){
+    const f=frame(P,d);
+    if(d.id==='d10') ev('checkout-inn',DAY.d10.date,f.checkout,f.checkout+15,`Check out of ${INN_SHORT} (by 10:30)`,`${INN}, Lāwaʻi`,`Tonight: ${HOTEL}, Princeville.`);
+    if(d.id==='d11') ev('checkout-hotel',DAY.d11.date,f.checkout,f.checkout+15,`Check out of ${HOTEL}`,`${HOTEL}, Princeville`,'About 1 hour to the airport.');
+    for(const it of P.state[d.id].items) ev(`${it.a.id}-${d.id}`, DAY[d.id].date, it.s, it.e, it.a.t, evLoc(it.a,it), evDesc(it.a));
+  }
+  ev('car','2026-11-11',carBack(),carBack()+30,'Return the Turo car','Līhuʻe Airport (LIH)','Then the agriculture check for bags and security.');
+  ev('flight','2026-11-11',FLIGHT_OUT,FLIGHT_OUT+30,'Flight LIH → LAX','Līhuʻe Airport (LIH)','Lands in Los Angeles at 22:42.');
+  L.push('END:VCALENDAR');
+  return L.join('\r\n')+'\r\n';
+}
+const CRC = (()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c = CRC[(c^b[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zip(files){
+  const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+  const DOS_T=(12<<11), DOS_D=((2026-1980)<<9)|(11<<5)|5;
+  for(const f of files){
+    const nm=enc.encode(f.name), data=f.data, crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true);
+    lh.setUint16(10,DOS_T,true); lh.setUint16(12,DOS_D,true); lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,nm.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer), nm, data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+    ch.setUint16(12,DOS_T,true); ch.setUint16(14,DOS_D,true); ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,nm.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true); ch.setUint16(34,0,true); ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,off,true);
+    cen.push(new Uint8Array(ch.buffer), nm);
+    off += 30 + nm.length + data.length;
+  }
+  const cs = cen.reduce((t,p)=>t+p.length,0);
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true); end.setUint32(12,cs,true); end.setUint32(16,off,true);
+  const all=[...parts,...cen,new Uint8Array(end.buffer)], out=new Uint8Array(all.reduce((t,p)=>t+p.length,0));
+  let p=0; for(const a of all){ out.set(a,p); p+=a.length; } return out;
+}
+async function exportIcs(P){
+  const ics = buildIcs(P);
+  if(DL){
+    const data = zip([{name:'kauai-plan.ics', data:new TextEncoder().encode(ics)}]);
+    try{ await DL.save({filename:'kauai-plan.zip', data}); toast('Calendar ready'); }
+    catch(e){ const c=e&&e.code; toast(c==='declined'?'Download cancelled':c==='rate_limited'?'Wait a moment and try again':'Download not available here'); if(c==='unavailable'||c==='not_granted'||c==='extension_not_enabled'){ DL=null; renderPlan(); } }
+    return;
+  }
+  if(NATIVE){
+    try{
+      const url = URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));
+      const link = document.createElement('a'); link.href=url; link.download='kauai-plan.ics';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 5000);
+      toast('Calendar downloaded');
+    }catch(e){ toast('Download not available here'); }
+    return;
+  }
+  toast('Download not available here');
+}
+function planText(P){
+  const out=['KAUAʻI · Nov 7–11', `Sat 7 · 11:03 land at Līhuʻe, Turo car → ${INN} (Lāwaʻi)`];
+  for(const d of P.conf){
+    out.push('', `${DAY[d.id].name} — ${WX[d.id].line}`);
+    const its=P.state[d.id].items, f=frame(P,d), ls=lunchInfo(P.state[d.id],d).slot;
+    const co = d.id==='d10' ? `  ${hm(f.checkout)} check out of ${INN_SHORT} (by 10:30)` : d.id==='d11' ? `  ${hm(f.checkout)} check out of ${HOTEL}` : '';
+    if(!its.length) out.push('  free');
+    its.forEach((it,i)=>{
+      if(co && i===f.k) out.push(co);
+      if(ls && ls.before===i) out.push(`  ${hm(ls.at)} lunch break`);
+      out.push(`  ${hm(it.s)}–${hm(it.e)} ${it.a.t} (${it.where||it.a.op})${it.a.book?(BOOKED[it.a.id]?' · booked':' · TO BOOK'):''}`);
+    });
+    if(co && f.k===its.length) out.push(co);
+    if(ls && ls.before===its.length) out.push(`  ${hm(ls.at)} lunch break`);
+    if(d.id==='d10') out.push(`  night at ${HOTEL}`);
+    if(d.id==='d11') out.push(`  ${hm(carBack())} return the car · ${hm(FLIGHT_OUT)} flight to LAX`);
+  }
+  return out.join('\n');
+}
+async function copyText(txt, msg='Plan copied'){
+  try{ await navigator.clipboard.writeText(txt); toast(msg); }
+  catch(e){ openSheet(`<h2 id="sheetTitle">Copy by hand</h2><p class="sub">Press and hold to select everything.</p><textarea style="width:100%;min-height:50vh;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:10px;font:14px/1.4 var(--body)" readonly>${esc(txt)}</textarea>`); const ta=$('#sheet textarea'); ta.focus(); ta.select(); }
+}
+
+/* ---------- partner code ---------- */
+function b64u(bytes){ let s=''; bytes.forEach(b=>s+=String.fromCharCode(b)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function unb64u(str){ const s=str.replace(/-/g,'+').replace(/_/g,'/'); const pad=s+'==='.slice((s.length+3)%4); const bin=atob(pad); return Uint8Array.from(bin,c=>c.charCodeAt(0)); }
+function myCode(){ const bytes=new Uint8Array(Math.ceil(ACT.length/4)); ACT.forEach((a,i)=>{ const v=DEC[a.id]||0; bytes[i>>2] |= v<<((i&3)*2); }); return 'K'+b64u(bytes); }
+function readCode(code){
+  code=(code||'').trim(); if(!/^K[A-Za-z0-9_-]+$/.test(code)) return null;
+  let bytes; try{ bytes=unb64u(code.slice(1)); }catch(e){ return null; }
+  if(bytes.length!==Math.ceil(ACT.length/4)) return null;
+  const out={}; ACT.forEach((a,i)=>{ const v=(bytes[i>>2]>>((i&3)*2))&3; if(v) out[a.id]=v; }); return out;
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  load();
+  $('#bSet').innerHTML=IC.gear; $('#bList').innerHTML=IC.list; $('#bUndo').innerHTML=IC.undo; $('#bNo').innerHTML=IC.x; $('#bStar').innerHTML=IC.star; $('#bYes').innerHTML=IC.heart; $('#bInfo').innerHTML=IC.info;
+  renderWx(); renderDeck();
+  $('#bNo').onclick=()=>decide(1); $('#bYes').onclick=()=>decide(2); $('#bStar').onclick=()=>decide(3);
+  $('#bUndo').onclick=undo; $('#bInfo').onclick=()=>{ const q=queue(); if(q[0]) openDetails(q[0].id); };
+  $('#bPlan').onclick=()=>{ if(view()==='plan') showDeck(); else showPlan(); };
+  $('#bList').onclick=()=>{ if(view()==='list') showDeck(); else showList(); };
+  $('#wxStrip').onclick=openWeather; $('#bSet').onclick=openSettings;
+  $('#backdrop').onclick=closeSheet;
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && !$('#sheet').hidden){ closeSheet(); return; }
+    if(!$('#sheet').hidden || view()!=='deck') return;
+    if(e.target.matches('input,select,textarea')) return;
+    if(e.key==='ArrowRight') decide(2); else if(e.key==='ArrowLeft') decide(1); else if(e.key==='ArrowUp') decide(3);
+    else if(e.key==='Backspace'){ e.preventDefault(); undo(); }
+  });
+  try{ window.claude?.use?.('downloads').then(d=>{ DL=d||null; if(view()==='plan') renderPlan(); }).catch(()=>{}); }catch(e){}
+}
+boot();
+</script>
+
+</body>
+</html>
